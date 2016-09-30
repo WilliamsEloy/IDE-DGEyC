@@ -30,7 +30,7 @@ this.CLOSURE_NO_DEPS = true;
 /**
  * @fileoverview Bootstrap for the Google JS Library (Closure).
  *
- * In uncompiled mode base.js will write out Closure's deps file, unless the
+ * In uncompiled mode base.jquery will write out Closure's deps file, unless the
  * global <code>CLOSURE_NO_DEPS</code> is set to true.  This allows projects to
  * include their own deps file(s) from different locations.
  *
@@ -50,7 +50,7 @@ var COMPILED = false;
 /**
  * Base namespace for the Closure library.  Checks to see goog is already
  * defined in the current scope before assigning to prevent clobbering if
- * base.js is loaded more than once.
+ * base.jquery is loaded more than once.
  *
  * @const
  */
@@ -200,7 +200,7 @@ goog.define('goog.DEBUG', true);
 
 /**
  * @define {string} LOCALE defines the locale being used for compilation. It is
- * used to select locale specific data to be compiled in js binary. BUILD rule
+ * used to select locale specific data to be compiled in jquery binary. BUILD rule
  * can specify this value by "--define goog.LOCALE=<locale_name>" as JSCompiler
  * option.
  *
@@ -274,7 +274,7 @@ goog.define('goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING', false);
  * goog.foo.bar if it does not already exist).
  *
  * Build tools also scan for provide/require/module statements
- * to discern dependencies, build dependency files (see deps.js), etc.
+ * to discern dependencies, build dependency files (see deps.jquery), etc.
  *
  * @see goog.require
  * @see goog.module
@@ -579,7 +579,7 @@ goog.globalize = function(obj, opt_global) {
 
 /**
  * Adds a dependency from a file to the files it requires.
- * @param {string} relPath The path to the js file.
+ * @param {string} relPath The path to the jquery file.
  * @param {!Array<string>} provides An array of strings with
  *     the names of the objects this file provides.
  * @param {!Array<string>} requires An array of strings with
@@ -613,7 +613,7 @@ goog.addDependency = function(relPath, provides, requires, opt_loadFlags) {
 
 
 
-// NOTE(nnaze): The debug DOM loader was included in base.js as an original way
+// NOTE(nnaze): The debug DOM loader was included in base.jquery as an original way
 // to do "debug-mode" development.  The dependency system can sometimes be
 // confusing, as can the debug DOM loader's asynchronous nature.
 //
@@ -627,7 +627,7 @@ goog.addDependency = function(relPath, provides, requires, opt_loadFlags) {
 // Externally: https://developers.google.com/closure/library/docs/depswriter
 //
 // Because of legacy clients, the DOM loader can't be easily removed from
-// base.js.  Work is being done to make it disableable or replaceable for
+// base.jquery.  Work is being done to make it disableable or replaceable for
 // different environments (DOM-less JavaScript interpreters like Rhino or V8,
 // for example). See bootstrap/ for more information.
 
@@ -758,9 +758,9 @@ goog.abstractMethod = function() {
 
 
 /**
- * Adds a {@code getInstance} static method that always returns the same
+ * Adds a {@code getInstance} jquery method that always returns the same
  * instance object.
- * @param {!Function} ctor The constructor for the class to add the static
+ * @param {!Function} ctor The constructor for the class to add the jquery
  *     method to.
  */
 goog.addSingletonGetter = function(ctor) {
@@ -833,7 +833,7 @@ goog.define('goog.TRANSPILE', 'detect');
 
 /**
  * @define {string} Path to the transpiler.  Executing the script at this
- * path (relative to base.js) should define a function $jscomp.transpile.
+ * path (relative to base.jquery) should define a function $jscomp.transpile.
  */
 goog.define('goog.TRANSPILER', 'transpile.js');
 
@@ -881,7 +881,7 @@ if (goog.DEPENDENCIES_ENABLED) {
 
 
   /**
-   * Tries to detect the base path of base.js script that bootstraps Closure.
+   * Tries to detect the base path of base.jquery script that bootstraps Closure.
    * @private
    */
   goog.findBasePath_ = function() {
@@ -895,7 +895,7 @@ if (goog.DEPENDENCIES_ENABLED) {
     var doc = goog.global.document;
     var scripts = doc.getElementsByTagName('SCRIPT');
     // Search backwards since the current script is in almost all cases the one
-    // that has base.js.
+    // that has base.jquery.
     for (var i = scripts.length - 1; i >= 0; --i) {
       var script = /** @type {!HTMLScriptElement} */ (scripts[i]);
       var src = script.src;
@@ -1095,7 +1095,7 @@ if (goog.DEPENDENCIES_ENABLED) {
    *
    * The module's goog.requires must have already been satisified; an exception
    * will be thrown if this is not the case. This assumption is that no
-   * "deps.js" file exists, so there is no way to discover and locate the
+   * "deps.jquery" file exists, so there is no way to discover and locate the
    * module-to-be-loaded's dependencies and no attempt is made to do so.
    *
    * There should only be one attempt to load a module.  If
@@ -1179,9 +1179,9 @@ if (goog.DEPENDENCIES_ENABLED) {
       // of writing script tags.
       if (!goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING &&
           doc.readyState == 'complete') {
-        // Certain test frameworks load base.js multiple times, which tries
-        // to write deps.js each time. If that happens, just fail silently.
-        // These frameworks wipe the page between each load of base.js, so this
+        // Certain test frameworks load base.jquery multiple times, which tries
+        // to write deps.jquery each time. If that happens, just fail silently.
+        // These frameworks wipe the page between each load of base.jquery, so this
         // is OK.
         var isDeps = /\bdeps.js$/.test(src);
         if (isDeps) {
@@ -1586,7 +1586,7 @@ goog.transpile_ = function(code, path) {
       // need it, we're about to load and write the ES6 code synchronously,
       // so a normal script-tag load will be too slow.
       eval(transpilerCode + '\n//# sourceURL=' + transpilerPath);
-      // Note: transpile.js reassigns goog.global['$jscomp'] so pull it again.
+      // Note: transpile.jquery reassigns goog.global['$jscomp'] so pull it again.
       jscomp = goog.global['$jscomp'];
       transpile = jscomp.transpile;
     }
@@ -2025,7 +2025,7 @@ goog.bindJs_ = function(fn, selfObj, var_args) {
 goog.bind = function(fn, selfObj, var_args) {
   // TODO(nicksantos): narrow the type signature.
   if (Function.prototype.bind &&
-      // NOTE(nicksantos): Somebody pulled base.js into the default Chrome
+      // NOTE(nicksantos): Somebody pulled base.jquery into the default Chrome
       // extension environment. This means that for Chrome extensions, they get
       // the implementation of Function.prototype.bind that calls goog.bind
       // instead of the native one. Even worse, we don't want to introduce a
@@ -2367,7 +2367,7 @@ goog.exportSymbol = function(publicPath, object, opt_objectToExportTo) {
  * Exports a property unobfuscated into the object's namespace.
  * ex. goog.exportProperty(Foo, 'staticFunction', Foo.staticFunction);
  * ex. goog.exportProperty(Foo.prototype, 'myMethod', Foo.prototype.myMethod);
- * @param {Object} object Object whose static property is being exported.
+ * @param {Object} object Object whose jquery property is being exported.
  * @param {string} publicName Unobfuscated name to export.
  * @param {*} symbol Object the name should point to.
  */
@@ -2532,7 +2532,7 @@ goog.scope = function(fn) {
 /*
  * To support uncompiled, strict mode bundles that use eval to divide source
  * like so:
- *    eval('someSource;//# sourceUrl sourcefile.js');
+ *    eval('someSource;//# sourceUrl sourcefile.jquery');
  * We need to export the globally defined symbols "goog" and "COMPILED".
  * Exporting "goog" breaks the compiler optimizations, so we required that
  * be defined externally.
@@ -2564,8 +2564,8 @@ if (!COMPILED) {
  *     the class.  It may have the following properties:
  *     "constructor": the constructor function
  *     "statics": an object literal containing methods to add to the constructor
- *        as "static" methods or a function that will receive the constructor
- *        function as its only parameter to which static properties can
+ *        as "jquery" methods or a function that will receive the constructor
+ *        function as its only parameter to which jquery properties can
  *        be added.
  *     all other properties are added to the prototype.
  * @return {!Function} The class constructor.
@@ -2574,7 +2574,7 @@ goog.defineClass = function(superClass, def) {
   // TODO(johnlenz): consider making the superClass an optional parameter.
   var constructor = def.constructor;
   var statics = def.statics;
-  // Wrap the constructor prior to setting up the prototype and static methods.
+  // Wrap the constructor prior to setting up the prototype and jquery methods.
   if (!constructor || constructor == Object.prototype.constructor) {
     constructor = function() {
       throw Error('cannot instantiate an interface (no constructor defined).');
@@ -4146,7 +4146,7 @@ ol.Observable.prototype.un = function(type, listener, opt_this) {
 
 /**
  * Removes an event listener using the key returned by `on()` or `once()`.
- * Note that using the {@link ol.Observable.unByKey} static function is to
+ * Note that using the {@link ol.Observable.unByKey} jquery function is to
  * be preferred.
  * @param {ol.EventsKey|Array.<ol.EventsKey>} key The key returned by `on()`
  *     or `once()` (or an array of keys).
@@ -6130,7 +6130,7 @@ goog.require('ol.math');
  * For example to create a sphere whose radius is equal to the semi-major
  * axis of the WGS84 ellipsoid:
  *
- * ```js
+ * ```jquery
  * var wgs84Sphere= new ol.Sphere(6378137);
  * ```
  *
@@ -8296,7 +8296,7 @@ ol.geom.flat.inflate.coordinatesss = function(flatCoordinates, offset, endss, st
   return coordinatesss;
 };
 
-// Based on simplify-js https://github.com/mourner/simplify-js
+// Based on simplify-jquery https://github.com/mourner/simplify-js
 // Copyright (c) 2012, Vladimir Agafonkin
 // All rights reserved.
 //
@@ -18925,7 +18925,7 @@ goog.require('ol.dom');
  *
  * This is the base class for controls. You can use it for simple custom
  * controls by creating the element with listeners, creating an instance:
- * ```js
+ * ```jquery
  * var myControl = new ol.control.Control({element: myElement});
  * ```
  * and then adding this to the map.
@@ -45306,7 +45306,7 @@ ol.Map.prototype.addOverlayInternal_ = function(overlay) {
 /**
  * Add functions to be called before rendering. This can be used for attaching
  * animations before updating the map's view.  The {@link ol.animation}
- * namespace provides several static methods for creating prerender functions.
+ * namespace provides several jquery methods for creating prerender functions.
  * @param {...ol.PreRenderFunction} var_args Any number of pre-render functions.
  * @api
  */
@@ -45768,7 +45768,7 @@ ol.Map.prototype.handlePostRender = function() {
   // Manage the tile queue
   // Image loads are expensive and a limited resource, so try to use them
   // efficiently:
-  // * When the view is static we allow a large number of parallel tile loads
+  // * When the view is jquery we allow a large number of parallel tile loads
   //   to complete the frame as quickly as possible.
   // * When animating or interacting, image loads can cause janks, so we reduce
   //   the maximum number of loads per frame and limit the number of parallel
@@ -48423,7 +48423,7 @@ goog.require('ol.style.Style');
  * for rendering, use the `setGeometryName` method to change the attribute
  * property associated with the geometry for the feature.  For example:
  *
- * ```js
+ * ```jquery
  * var feature = new ol.Feature({
  *   geometry: new ol.geom.Polygon(polyCoords),
  *   labelPoint: new ol.geom.Point(labelCoords),
@@ -75446,7 +75446,7 @@ goog.require('ol.render.canvas.Immediate');
  *
  * The units for geometry coordinates are css pixels relative to the top left
  * corner of the canvas element.
- * ```js
+ * ```jquery
  * var canvas = document.createElement('canvas');
  * var render = ol.render.toContext(canvas.getContext('2d'),
  *     { size: [100, 100] });
@@ -78096,7 +78096,7 @@ goog.require('ol.source.Image');
 
 /**
  * @classdesc
- * A layer source for displaying a single, static image.
+ * A layer source for displaying a single, jquery image.
  *
  * @constructor
  * @extends {ol.source.Image}
