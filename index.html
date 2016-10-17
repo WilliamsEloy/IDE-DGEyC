@@ -5,18 +5,24 @@
     <link rel="shortcut icon" href="img/mapa.png" />
     <title>IDE DGEyC</title>
     <link rel="stylesheet" href="openLayers/ol.css" type="text/css">
-    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-    <script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="jquery-ui/jquery-ui.css">
     <script src="openLayers/ol.js"></script>
     <script src="jquery/jquery-3.1.1.min.js"></script>
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <style>
         .imprimir {
-            top: 65px;
+            top: 105px;
             left: .5em;
         }
         .ol-touch .imprimir {
+            top: 80px;
+        }
+        .capas {
+            top: 65px;
+            left: .5em;
+        }
+        .ol-touch .capas {
             top: 80px;
         }
         #map:focus {
@@ -27,7 +33,12 @@
         }
         #panel {
             display: none;
-            border : 1px solid #000;
+            border: 1px solid #000;
+            width: 200px;
+        }
+        #panel-capas {
+            display: none;
+            border: 1px solid #000;
             width: 200px;
         }
     </style>
@@ -61,12 +72,11 @@
         button.setAttribute('src', 'img/impresora.png');
         button.setAttribute('width', '25');
         button.setAttribute('height', '25');
+        button.setAttribute('title', 'Imprimir');
+        button.setAttribute('data-toggle', 'tooltip');
 
-        var this_ = this;
         var handleImprimir = function() {
-            $('#panel').toggle('slide', {
-                direction: 'left'
-            }, 1000);
+            $('#panel').toggle('slide', {}, 500);
         };
 
         button.addEventListener('click', handleImprimir, false);
@@ -77,7 +87,7 @@
         element.appendChild(button);
 
         var panel = document.createElement('div');
-        panel.setAttribute('id', 'panel')
+        panel.setAttribute('id', 'panel');
         element.appendChild(panel);
 
         ol.control.Control.call(this, {
@@ -89,7 +99,46 @@
     ol.inherits(app.ImprimirControl, ol.control.Control);
 
     //
-    // Create map, giving it a rotate to north control.
+    // Define capas control.
+    //
+
+    app.CapasControl = function(opt_options) {
+
+        var options = opt_options || {};
+
+        var button = document.createElement('input');
+        button.setAttribute('type', 'image');
+        button.setAttribute('src', 'img/capas.png');
+        button.setAttribute('width', '25');
+        button.setAttribute('height', '25');
+        button.setAttribute('title', 'Capas');
+        button.setAttribute('data-toggle', 'tooltip');
+
+        var handleCapas = function() {
+            $('#panel-capas').toggle('slide', {}, 500);
+        };
+
+        button.addEventListener('click', handleCapas, false);
+        button.addEventListener('touchstart', handleCapas, false);
+
+        var element = document.createElement('div');
+        element.className = 'capas ol-unselectable ol-control';
+        element.appendChild(button);
+
+        var panel = document.createElement('div');
+        panel.setAttribute('id', 'panel-capas');
+        element.appendChild(panel);
+
+        ol.control.Control.call(this, {
+            element: element,
+            target: options.target
+        });
+
+    };
+    ol.inherits(app.CapasControl, ol.control.Control);
+
+    //
+    // Create map
     //
 
     var map = new ol.Map({
@@ -100,7 +149,8 @@
         ],
         target: 'map',
         controls: ol.control.defaults().extend([
-            new app.ImprimirControl()
+                new app.ImprimirControl(),
+                new app.CapasControl()
         ]),
         view: new ol.View({
             center: ol.proj.transform([-68, -43], 'EPSG:4326', 'EPSG:3857'),
@@ -113,6 +163,12 @@
     $('.ol-zoom-in, .ol-zoom-out').tooltip({
         placement: 'right'
     });
+    $('[data-toggle="tooltip"]').tooltip({
+        placement: 'right'
+    });
 </script>
+<script src="jquery-ui/jquery-ui.js"></script>
+<!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+<script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
 </body>
 </html>
