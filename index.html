@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" href="img/mapa.png" />
@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="openLayers/ol.css" type="text/css">
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="jquery-ui/jquery-ui.css">
-    <script src="openLayers/ol.js"></script>
-    <script src="jquery/jquery-3.1.1.min.js"></script>
-    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="openLayers/ol.js"></script>
+    <script type="text/javascript" src="jquery/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/funciones.js"></script>
     <style>
         .imprimir {
             top: 105px;
@@ -25,150 +26,91 @@
         .ol-touch .capas {
             top: 80px;
         }
+        .tooltip-inner {
+            white-space: nowrap;
+        }
         #map:focus {
             outline: #4A74A8 solid 0.15em;
         }
-        .tooltip-inner {
-             white-space: nowrap;
-        }
-        #panel {
+        .panel-capas {
             display: none;
-            border: 1px solid #000;
-            width: 200px;
-        }
-        #panel-capas {
-            display: none;
-            border: 1px solid #000;
-            width: 200px;
+            width: auto;
+            position: relative;
+            padding: 0.4em;
+            border: 2px solid #2aabd2;
         }
     </style>
+    <script>
+        $ (function () {
+            $("[name='capa']").on("change", seleccionarCapa);
+        });
+    </script>
 </head>
 <body>
-<div id="map" style="width: 100%; height: 780px" tabindex="0"></div>
-<script>
-    /**
-     * Define a namespace for the application.
-     */
-    window.app = {};
-    var app = window.app;
-
-
-    //
-    // Define imprimir control.
-    //
-
-
-    /**
-     * @constructor
-     * @extends {ol.control.Control}
-     * @param {Object=} opt_options Control options.
-     */
-    app.ImprimirControl = function(opt_options) {
-
-        var options = opt_options || {};
-
-        var button = document.createElement('input');
-        button.setAttribute('type', 'image');
-        button.setAttribute('src', 'img/impresora.png');
-        button.setAttribute('width', '25');
-        button.setAttribute('height', '25');
-        button.setAttribute('title', 'Imprimir');
-        button.setAttribute('data-toggle', 'tooltip');
-
-        var handleImprimir = function() {
-            $('#panel').toggle('slide', {}, 500);
-        };
-
-        button.addEventListener('click', handleImprimir, false);
-        button.addEventListener('touchstart', handleImprimir, false);
-
-        var element = document.createElement('div');
-        element.className = 'imprimir ol-unselectable ol-control';
-        element.appendChild(button);
-
-        var panel = document.createElement('div');
-        panel.setAttribute('id', 'panel');
-        element.appendChild(panel);
-
-        ol.control.Control.call(this, {
-            element: element,
-            target: options.target
-        });
-
-    };
-    ol.inherits(app.ImprimirControl, ol.control.Control);
-
-    //
-    // Define capas control.
-    //
-
-    app.CapasControl = function(opt_options) {
-
-        var options = opt_options || {};
-
-        var button = document.createElement('input');
-        button.setAttribute('type', 'image');
-        button.setAttribute('src', 'img/capas.png');
-        button.setAttribute('width', '25');
-        button.setAttribute('height', '25');
-        button.setAttribute('title', 'Capas');
-        button.setAttribute('data-toggle', 'tooltip');
-
-        var handleCapas = function() {
-            $('#panel-capas').toggle('slide', {}, 500);
-        };
-
-        button.addEventListener('click', handleCapas, false);
-        button.addEventListener('touchstart', handleCapas, false);
-
-        var element = document.createElement('div');
-        element.className = 'capas ol-unselectable ol-control';
-        element.appendChild(button);
-
-        var panel = document.createElement('div');
-        panel.setAttribute('id', 'panel-capas');
-        element.appendChild(panel);
-
-        ol.control.Control.call(this, {
-            element: element,
-            target: options.target
-        });
-
-    };
-    ol.inherits(app.CapasControl, ol.control.Control);
-
-    //
-    // Create map
-    //
-
-    var map = new ol.Map({
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM()
-            })
-        ],
-        target: 'map',
-        controls: ol.control.defaults().extend([
-                new app.ImprimirControl(),
-                new app.CapasControl()
-        ]),
-        view: new ol.View({
-            center: ol.proj.transform([-68, -43], 'EPSG:4326', 'EPSG:3857'),
-            zoom: 6,
-            maxZoom: 8,
-            minZoom: 6
-        }),
-    });
-
-    $('.ol-zoom-in, .ol-zoom-out').tooltip({
-        placement: 'right'
-    });
-    $('[data-toggle="tooltip"]').tooltip({
-        placement: 'right'
-    });
-</script>
-<script src="jquery-ui/jquery-ui.js"></script>
+<div id="map" style="width: 100%; height: 760px" tabindex="0" class="map"></div>
+<div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
+    <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
+           data-toggle="tooltip">
+</div>
+<div id="boton-capas" class="capas ol-unselectable ol-control">
+    <input id="capas" type="image" src="img/capas.png" width="25" height="25" title="Capas" data-toggle="tooltip">
+    <div id="panel-capas" class="panel-capas ui-widget-content ui-corner-all">
+        <button id="capas-base" onclick="capasBase()" style="width: auto; height: 25px;
+                padding: 5px">Capas Base</button>
+        <div id="panel-capas-base" class="panel-capas ui-widget-content ui-corner-all">
+            <img src="img/ign.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-0" checked>
+            <label for="radio-cb-0">IGN</label>
+            <br>
+            <img src="img/OpenStreetMap.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-1">
+            <label for="radio-cb-1">Open Street Map</label>
+            <br>
+            <img src="img/Google_Maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-2">
+            <label for="radio-cb-2">Google Streets</label>
+            <br>
+            <img src="img/Google_Maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-3">
+            <label for="radio-cb-3">Google Terrain</label>
+            <br>
+            <img src="img/Google_Maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-4">
+            <label for="radio-cb-4">Google Satellite</label>
+            <br>
+            <img src="img/Google_Maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-5">
+            <label for="radio-cb-5">Google Hybrid</label>
+            <br>
+            <img src="img/bing_maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-6">
+            <label for="radio-cb-6">Bing Road</label>
+            <br>
+            <img src="img/bing_maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-7">
+            <label for="radio-cb-7">Bing Aerial</label>
+            <br>
+            <img src="img/bing_maps.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-8">
+            <label for="radio-cb-8">Bing Hybrid</label>
+            <br>
+            <img src="img/sinCapaBase.png" width="25px" height="25px">
+            <input type="radio" name="capa" id="radio-cb-9">
+            <label for="radio-cb-9">Sin capa base</label>
+        </div>
+        <button id="capas-dgeyc" onclick="capasDgeyc()" style="width: auto; height: 25px; padding: 5px"
+                data-toggle="tooltip" title="Dirección General de Estadística y Censos">DGEyC</button>
+        <div id="panel-capas-dgeyc" class="panel-capas ui-widget-content ui-corner-all">
+            <button id="capa-dgeyc-censos" name="capa-dgeyc" style="width: auto; height: 25px;
+                    padding: 5px">Censos</button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
 <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-<script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+<script type="text/javascript"
+        src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL">
+</script>
 </body>
 </html>
