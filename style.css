@@ -1,0 +1,53 @@
+.buscar {
+    top: 65px;
+    left: .5em;
+}
+.capas {
+    top: 105px;
+    left: .5em;
+}
+.ol-touch .capas {
+    top: 80px;
+}
+.tooltip-inner {
+    white-space: nowrap;
+    width: auto;
+    max-width: 350px;
+}
+#map:focus {
+    outline: #4A74A8 solid 0.15em;
+}
+.panel-capas, .panel-buscar {
+    display: none;
+    width: auto;
+    position: relative;
+    padding: 0.4em;
+    border: 2px solid #2aabd2;
+}
+.sub-panel-capas {
+    display: none;
+    width: auto;
+    position: relative;
+    padding: 0.4em;
+    border: 2px solid #2aabd2;
+    margin-left: 20px;
+}
+.panel-consulta {
+    display: none;
+    width: 350px;
+    height: auto;
+    top: 20%;
+    left: 70%;
+    padding: 0.4em;
+    border: 2px solid #2aabd2;
+}
+label {
+    display: inline;
+}
+.imprimir {
+    top: 145px;
+    left: .5em;
+}
+.ol-touch .imprimir {
+    top: 80px;
+}

@@ -7,110 +7,104 @@
     <link rel="stylesheet" href="openLayers/ol.css" type="text/css">
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="jquery-ui/jquery-ui.css">
+    <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="openLayers/ol.js"></script>
     <script type="text/javascript" src="jquery/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/funciones.js"></script>
-    <style>
-        .imprimir {
-            top: 105px;
-            left: .5em;
-        }
-        .ol-touch .imprimir {
-            top: 80px;
-        }
-        .capas {
-            top: 65px;
-            left: .5em;
-        }
-        .ol-touch .capas {
-            top: 80px;
-        }
-        .tooltip-inner {
-            white-space: nowrap;
-        }
-        #map:focus {
-            outline: #4A74A8 solid 0.15em;
-        }
-        .panel-capas {
-            display: none;
-            width: auto;
-            position: relative;
-            padding: 0.4em;
-            border: 2px solid #2aabd2;
-        }
-    </style>
-    <script>
-        $ (function () {
-            $("[name='capa']").on("change", seleccionarCapa);
-        });
-    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyAR0YLSFwrEfkUUToM0KwxbfYxknCM6ygc"></script>
+    <script src="openLayers/googleMaps/ol3gm.js"></script>
 </head>
 <body>
-<div id="map" style="width: 100%; height: 760px" tabindex="0" class="map"></div>
-<div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
-    <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
-           data-toggle="tooltip">
-</div>
-<div id="boton-capas" class="capas ol-unselectable ol-control">
-    <input id="capas" type="image" src="img/capas.png" width="25" height="25" title="Capas" data-toggle="tooltip">
-    <div id="panel-capas" class="panel-capas ui-widget-content ui-corner-all">
-        <button id="capas-base" onclick="capasBase()" style="width: auto; height: 25px;
-                padding: 5px">Capas Base</button>
-        <div id="panel-capas-base" class="panel-capas ui-widget-content ui-corner-all">
-            <img src="img/ign.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-0" checked>
-            <label for="radio-cb-0">IGN</label>
-            <br>
-            <img src="img/OpenStreetMap.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-1">
-            <label for="radio-cb-1">Open Street Map</label>
-            <br>
-            <img src="img/Google_Maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-2">
-            <label for="radio-cb-2">Google Streets</label>
-            <br>
-            <img src="img/Google_Maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-3">
-            <label for="radio-cb-3">Google Terrain</label>
-            <br>
-            <img src="img/Google_Maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-4">
-            <label for="radio-cb-4">Google Satellite</label>
-            <br>
-            <img src="img/Google_Maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-5">
-            <label for="radio-cb-5">Google Hybrid</label>
-            <br>
-            <img src="img/bing_maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-6">
-            <label for="radio-cb-6">Bing Road</label>
-            <br>
-            <img src="img/bing_maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-7">
-            <label for="radio-cb-7">Bing Aerial</label>
-            <br>
-            <img src="img/bing_maps.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-8">
-            <label for="radio-cb-8">Bing Hybrid</label>
-            <br>
-            <img src="img/sinCapaBase.png" width="25px" height="25px">
-            <input type="radio" name="capa" id="radio-cb-9">
-            <label for="radio-cb-9">Sin capa base</label>
-        </div>
-        <button id="capas-dgeyc" onclick="capasDgeyc()" style="width: auto; height: 25px; padding: 5px"
-                data-toggle="tooltip" title="Dirección General de Estadística y Censos">DGEyC</button>
-        <div id="panel-capas-dgeyc" class="panel-capas ui-widget-content ui-corner-all">
-            <button id="capa-dgeyc-censos" name="capa-dgeyc" style="width: auto; height: 25px;
-                    padding: 5px">Censos</button>
+    <div id="map" style="width: 100%; height: 760px" tabindex="0" class="map" onclick="ocultarPaneles()"></div>
+    <div id="boton-buscar" class="buscar ol-unselectable ol-control" onclick="panelBuscar()">
+        <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar"
+               data-toggle="tooltip">
+        <div id="panel-buscar" class="panel-buscar ui-widget-content ui-corner-all">
+            <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa">
         </div>
     </div>
-</div>
-<script type="text/javascript" src="js/app.js"></script>
-<script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
-<!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-<script type="text/javascript"
-        src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL">
-</script>
+    <div id="boton-capas" class="capas ol-unselectable ol-control">
+        <input id="capas" type="image" src="img/capas.png" width="25" height="25" title="Capas" data-toggle="tooltip">
+        <div id="panel-capas" class="panel-capas ui-widget-content ui-corner-all">
+            <button id="capas-base" onclick="slidePanel('#panel-capas-base')" style="width: auto; height: 25px;
+                    padding: 5px">Capas Base</button>
+            <div id="panel-capas-base" class="sub-panel-capas ui-widget-content ui-corner-all">
+                <img src="img/ign.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-0" checked>
+                <label for="radio-cb-0">IGN</label>
+                <br>
+                <img src="img/OpenStreetMap.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-1">
+                <label for="radio-cb-1">Open Street Map</label>
+                <br>
+                <img src="img/Google_Maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-2">
+                <label for="radio-cb-2">Google Streets</label>
+                <br>
+                <img src="img/Google_Maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-3">
+                <label for="radio-cb-3">Google Terrain</label>
+                <br>
+                <img src="img/Google_Maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-4">
+                <label for="radio-cb-4">Google Satellite</label>
+                <br>
+                <img src="img/Google_Maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-5">
+                <label for="radio-cb-5">Google Hybrid</label>
+                <br>
+                <img src="img/bing_maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-6">
+                <label for="radio-cb-6">Bing Road</label>
+                <br>
+                <img src="img/bing_maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-7">
+                <label for="radio-cb-7">Bing Aerial</label>
+                <br>
+                <img src="img/bing_maps.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-8">
+                <label for="radio-cb-8">Bing Hybrid</label>
+                <br>
+                <img src="img/sinCapaBase.png" width="25px" height="25px">
+                <input type="radio" name="capa" id="radio-cb-9">
+                <label for="radio-cb-9">Sin capa base</label>
+            </div>
+            <button id="capas-dgeyc" onclick="slidePanel('#panel-capas-dgeyc')"
+                    style="width: auto; height: 25px; padding: 5px" data-toggle="tooltip"
+                    title="Dirección General de Estadística y Censos">DGEyC</button>
+            <div id="panel-capas-dgeyc" class="sub-panel-capas ui-widget-content ui-corner-all">
+                <button id="capa-dgeyc-censos" name="capa-dgeyc" style="width: auto; height: 25px;
+                        padding: 5px">Censos</button>
+            </div>
+        </div>
+    </div>
+    <div id="panel-consulta" class="panel-consulta ui-widget-content ui-corner-all ol-unselectable ol-control">
+        <label for="speed">Select a speed</label>
+        <select name="speed" id="speed">
+            <option>Slower</option>
+            <option>Slow</option>
+            <option selected="selected">Medium</option>
+            <option>Fast</option>
+            <option>Faster</option>
+        </select>
+        <div>
+            <button class="col-lg-6" id="consulta-aceptar" style="position: relative; top: 20%;
+            left: 50%; width: 80px; height: 25px; padding: 5px;" onclick="capaAlFrente()">Aceptar</button>
+            <button class="col-lg-6" id="consulta-cancelar" style="position: relative; top: 20%;
+            left: 50%; width: 80px; height: 25px; padding: 5px;">Cancelar</button>
+        </div>
+    </div>
+    <div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
+        <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
+               data-toggle="tooltip" onclick="capaAlFrente()">
+    </div>
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/capasDGEyC.js"></script>
+    <script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script type="text/javascript"
+            src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL">
+    </script>
 </body>
 </html>

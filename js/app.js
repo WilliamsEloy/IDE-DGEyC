@@ -5,6 +5,35 @@ window.app = {};
 var app = window.app;
 
 /**
+ * Lógica del boton Buscar
+ * @param opt_options
+ * @constructor
+ */
+
+app.BuscarControl = function(opt_options) {
+
+    var options = opt_options || {};
+
+    var button = document.getElementById('buscar');
+
+    var handleBuscar = function() {
+        $('#panel-buscar').toggle('slide', {}, 500);
+    };
+
+    button.addEventListener('click', handleBuscar, false);
+    button.addEventListener('touchstart', handleBuscar, false);
+
+    var element = document.getElementById('boton-buscar');
+
+    ol.control.Control.call(this, {
+        element: element,
+        target: options.target
+    });
+};
+
+ol.inherits(app.BuscarControl, ol.control.Control);
+
+/**
  * Lógica del boton imprimir.
  * @param opt_options
  * @constructor
@@ -62,6 +91,35 @@ app.CapasControl = function(opt_options) {
 ol.inherits(app.CapasControl, ol.control.Control);
 
 /**
+ * Lógica del panel de consultas
+ * @param opt_options
+ * @constructor
+ */
+
+app.PanelConsultaControl = function(opt_options) {
+
+    var options = opt_options || {};
+
+    var button = document.getElementById('capa-dgeyc-censos');
+
+    var handlePanelConsulta = function() {
+        $('#panel-consulta').toggle('slide', {direction:'up'}, 500);
+    };
+
+    button.addEventListener('click', handlePanelConsulta, false);
+    button.addEventListener('touchstart', handlePanelConsulta, false);
+
+    var element = document.getElementById('panel-consulta');
+
+    ol.control.Control.call(this, {
+        element: element,
+        target: options.target
+    });
+};
+
+ol.inherits(app.PanelConsultaControl, ol.control.Control);
+
+/**
  * Layers (capas base)
  */
 
@@ -72,13 +130,38 @@ var layers = [
             params: {layers: "rural:basemap", transparent: 'false', format: 'image/jpeg', tiled: 'true'},
             serverType: 'geoserver'
         }),
-        visible: false,
-        title: 'IGN'
+        visible: true,
+        title: 'IGN',
+        type: 'base'
     }),
     new ol.layer.Tile({
         source: new ol.source.OSM(),
         visible: false,
-        title: 'Open Street Map'
+        title: 'Open Street Map',
+        type: 'base'
+    }),
+    new olgm.layer.Google({
+        visible: false,
+        title: 'Google Streets',
+        type: 'base'
+    }),
+    new olgm.layer.Google({
+        visible: false,
+        title: 'Google Terrain',
+        mapTypeId: google.maps.MapTypeId.TERRAIN,
+        type: 'base'
+    }),
+    new olgm.layer.Google({
+        visible: false,
+        title: 'Google Satellite',
+        mapTypeId: google.maps.MapTypeId.SATELLITE,
+        type: 'base'
+    }),
+    new olgm.layer.Google({
+        visible: false,
+        title: 'Google Hybrid',
+        mapTypeId: google.maps.MapTypeId.HYBRID,
+        type: 'base'
     }),
     new ol.layer.Tile({
         source: new ol.source.BingMaps({
@@ -86,7 +169,8 @@ var layers = [
             imagerySet: 'Road'
         }),
         visible: false,
-        title: 'Bing Road'
+        title: 'Bing Road',
+        type: 'base'
     }),
     new ol.layer.Tile({
         source: new ol.source.BingMaps({
@@ -94,7 +178,8 @@ var layers = [
             imagerySet: 'Aerial'
         }),
         visible: false,
-        title: 'Bing Aerial'
+        title: 'Bing Aerial',
+        type: 'base'
     }),
     new ol.layer.Tile({
         source: new ol.source.BingMaps({
@@ -102,12 +187,20 @@ var layers = [
             imagerySet: 'AerialWithLabels'
         }),
         visible: false,
-        title: 'Bing Hybrid'
+        title: 'Bing Hybrid',
+        type: 'base'
     }),
     new ol.layer.Tile({
-        title: 'Sin capa Base'
-    })
+        title: 'Sin capa Base',
+        type: 'base'
+    }),
 ];
+
+/**
+ * indice de la ultima capa base del arreglo layers.
+ */
+
+nro_capas_base = 9;
 
 /**
  * Creación del mapa
@@ -118,7 +211,9 @@ var map = new ol.Map({
     target: 'map',
     controls: ol.control.defaults().extend([
         new app.ImprimirControl(),
-        new app.CapasControl()
+        new app.CapasControl(),
+        new app.PanelConsultaControl(),
+        new app.BuscarControl()
     ]),
     view: new ol.View({
         center: ol.proj.transform([-68, -43], 'EPSG:4326', 'EPSG:3857'),
@@ -128,9 +223,29 @@ var map = new ol.Map({
     }),
 });
 
+var olGM = new olgm.OLGoogleMaps({map: map});
+olGM.activate();
+
 $('.ol-zoom-in, .ol-zoom-out').tooltip({
-    placement: 'right'
+    placement: 'right',
+    trigger : 'hover'
 });
 $('[data-toggle="tooltip"]').tooltip({
-    placement: 'right'
+    placement: 'right',
+    trigger : 'hover'
+});
+
+$(document).ready(function() {
+    for (var x = 0; x < capas.length; x++) {
+        map.addLayer(new ol.layer.Tile({
+                source: new ol.source.TileWMS({
+                    url: "http://ide.estadistica.chubut.gov.ar/geoserver/wms",
+                    params: capas[x].params,
+                    serverType: 'geoserver'
+                }),
+                title: capas[x].title,
+                visible: capas[x].visible
+            })
+        );
+    }
 });
