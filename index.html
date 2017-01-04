@@ -21,7 +21,7 @@
         <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar"
                data-toggle="tooltip">
         <div id="panel-buscar" class="panel-buscar ui-widget-content ui-corner-all">
-            <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa">
+            <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa" oninput="resizeBuscar()">
         </div>
     </div>
     <div id="boton-capas" class="capas ol-unselectable ol-control">
@@ -98,6 +98,10 @@
     <div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
         <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
                data-toggle="tooltip" onclick="capaAlFrente()">
+    </div>
+    <div id="panel-capas-visibles"
+         class="panel-capas-visibles ui-widget-content ui-corner-all ol-unselectable ol-control">
+        <ul id="sortable" class="ul-capas-visibles"/>
     </div>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/capasDGEyC.js"></script>
