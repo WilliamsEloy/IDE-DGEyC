@@ -95,3 +95,9 @@ label {
     position: absolute;
     right: 35px;
 }
+
+.ui-autocomplete {
+    max-height: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

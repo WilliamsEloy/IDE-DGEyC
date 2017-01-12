@@ -15,6 +15,7 @@ function seleccionarCapa() {
                 if (map_layers[i].get('visible') != true) {
                     map_layers[i].setVisible(true);
                     agregarCapaVisible(map_layers[i].get('title'));
+                    capaAlFrente();
                     if ($('#panel-capas-visibles').css('display') == 'none') {
                         $('#panel-capas-visibles').toggle('slide', {direction: 'up'}, 500);
                     }
@@ -30,12 +31,19 @@ function slidePanel(panel) {
 }
 
 function capaAlFrente(){
-    var new_layer = map.getLayers().item(10);
-    var old_layer = map.getLayers().item(11);
-    map.getLayers().removeAt(10);
-    map.getLayers().removeAt(10);
-    map.getLayers().setAt(11, old_layer);
-    map.getLayers().setAt(12, new_layer);
+    var map_layers = map.getLayers().getArray();
+    $($("#sortable li").get().reverse()).each(function () {
+        var capa = $(this);
+        for (var i = 0; i < map_layers.length; ++i) {
+            if (map_layers[i].get('type') != 'base') {
+                if (map_layers[i].get('title') === capa.text()) {
+                    var layer = map.getLayers().item(i);
+                    map.getLayers().removeAt(i);
+                    map.getLayers().setAt(map_layers.length, layer);
+                }
+            }
+        }
+    });
 }
 
 function quitarCapaVisible(id) {
@@ -53,6 +61,11 @@ function quitarCapaVisible(id) {
     }
 }
 
+function borrarBuscar() {
+    document.getElementById("input-buscar").value = "";
+    resizeBuscar();
+}
+
 $ (function () {
     $("[name='capa']").on("change", seleccionarCapaBase);
     var capasDisponibles = [];
@@ -65,7 +78,8 @@ $ (function () {
     });
     $("#input-buscar").on("search", seleccionarCapa);
     $( "#sortable" ).sortable({
-        revert: true
+        revert: true,
+        stop: capaAlFrente
     });
     $( "ul, li" ).disableSelection();
     $(document).on('click', '.capa-visible', function(){

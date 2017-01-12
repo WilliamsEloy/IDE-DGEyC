@@ -22,6 +22,7 @@
                data-toggle="tooltip">
         <div id="panel-buscar" class="panel-buscar ui-widget-content ui-corner-all">
             <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa" oninput="resizeBuscar()">
+            <a href="#" onclick="borrarBuscar()"><img src="img/borrar.png" width="25px" height="25px"></a>
         </div>
     </div>
     <div id="boton-capas" class="capas ol-unselectable ol-control">
@@ -90,14 +91,14 @@
         </select>
         <div>
             <button class="col-lg-6" id="consulta-aceptar" style="position: relative; top: 20%;
-            left: 50%; width: 80px; height: 25px; padding: 5px;" onclick="capaAlFrente()">Aceptar</button>
+            left: 50%; width: 80px; height: 25px; padding: 5px;">Aceptar</button>
             <button class="col-lg-6" id="consulta-cancelar" style="position: relative; top: 20%;
             left: 50%; width: 80px; height: 25px; padding: 5px;">Cancelar</button>
         </div>
     </div>
     <div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
         <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
-               data-toggle="tooltip" onclick="capaAlFrente()">
+               data-toggle="tooltip">
     </div>
     <div id="panel-capas-visibles"
          class="panel-capas-visibles ui-widget-content ui-corner-all ol-unselectable ol-control">
