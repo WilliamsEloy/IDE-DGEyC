@@ -72,7 +72,7 @@ $ (function () {
     for (var i = 0; i < capas.length; ++i) {
         capasDisponibles[i] = capas[i]['title'];
     }
-    $( "#input-buscar" ).autocomplete({
+    $("#input-buscar").autocomplete({
         source: capasDisponibles,
         select: seleccionarCapa
     });
@@ -81,7 +81,7 @@ $ (function () {
         revert: true,
         stop: capaAlFrente
     });
-    $( "ul, li" ).disableSelection();
+    $("ul, li").disableSelection();
     $(document).on('click', '.capa-visible', function(){
         var id = $(this).parent().attr('id');
         quitarCapaVisible(id);
@@ -140,8 +140,6 @@ function agregarCapaVisible(titulo) {
     var imgMenu = document.createElement('img');
     imgMenu.setAttribute('src', 'img/menu.png');
     imgMenu.setAttribute('class', 'menu');
-    imgMenu.setAttribute('height', '10px');
-    imgMenu.setAttribute('width', '10px');
     document.getElementById('menu-capa-' + nro_capa).appendChild(imgMenu);
     var btnCerrar = document.createElement('a');
     btnCerrar.setAttribute('href', '#');
@@ -151,7 +149,13 @@ function agregarCapaVisible(titulo) {
     var imgCerrar = document.createElement('img');
     imgCerrar.setAttribute('src', 'img/cerrar.png');
     imgCerrar.setAttribute('class', 'cerrar');
-    imgCerrar.setAttribute('height', '10px');
-    imgCerrar.setAttribute('width', '10px');
     document.getElementById('capa-visible-' + nro_capa).appendChild(imgCerrar);
+}
+
+function cerrarPanelInfo() {
+    $('#panel-info-capas').toggle('slide', {direction: 'up'}, 500);
+}
+
+function exportarInfo() {
+
 }

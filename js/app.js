@@ -126,7 +126,7 @@ ol.inherits(app.PanelConsultaControl, ol.control.Control);
 var layers = [
     new ol.layer.Tile({
         source: new ol.source.TileWMS({
-            url: "http://ide.estadistica.chubut.gov.ar/geoserver/wms",
+            url: 'http://ide.estadistica.chubut.gov.ar/geoserver/wms',
             params: {layers: "rural:basemap", transparent: 'false', format: 'image/jpeg', tiled: 'true'},
             serverType: 'geoserver'
         }),
@@ -223,6 +223,26 @@ var map = new ol.Map({
     }),
 });
 
+map.on('singleclick', function(evt) {
+    var viewResolution = (map.getView().getResolution());
+    var layers = map.getLayers();
+    layers.forEach(function (layer) {
+        if (layer.getVisible() && layer.get('type') != 'base'){
+            var url = layer.getSource().getGetFeatureInfoUrl(
+                evt.coordinate, viewResolution, 'EPSG:3857',
+                {'INFO_FORMAT': 'text/html'}
+            );
+            if (url) {
+                if ($('#panel-info-capas').css('display') == 'none') {
+                    $('#panel-info-capas').toggle('slide', {direction: 'up'}, 500);
+                }
+                var info = document.getElementById('info');
+                info.setAttribute('src', url);
+            }
+        }
+    });
+});
+
 var olGM = new olgm.OLGoogleMaps({map: map});
 olGM.activate();
 
@@ -239,13 +259,33 @@ $(document).ready(function() {
     for (var x = 0; x < capas.length; x++) {
         map.addLayer(new ol.layer.Tile({
                 source: new ol.source.TileWMS({
-                    url: "http://ide.estadistica.chubut.gov.ar/geoserver/wms",
+                    url: capas[x].url,
                     params: capas[x].params,
-                    serverType: 'geoserver'
+                    serverType: capas[x].serverType
                 }),
                 title: capas[x].title,
                 visible: capas[x].visible
             })
         );
     }
+    /*map.addLayer(new ol.layer.Vector({
+        source: new ol.source.Vector({
+            url: 'https://openlayers.org/en/v3.20.1/examples/data/geojson/countries.geojson',
+            format: new ol.format.GeoJSON()
+        }),
+        type: 'info'
+    }));*/
 });
+
+/*//TODO prueba select
+
+// select interaction working on "click"
+var select = new ol.interaction.Select({
+    condition: ol.events.condition.click,
+    multi: true
+});
+
+map.addInteraction(select);
+select.on('select', function(e) {
+    document.getElementById('info').innerHTML = '&nbsp;' + e.target.getFeatures().getLength();
+});*/

@@ -1,22 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="shortcut icon" href="img/mapa.png" />
     <title>IDE DGEyC</title>
     <link rel="stylesheet" href="openLayers/ol.css" type="text/css">
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
     <link rel="stylesheet" href="jquery-ui/jquery-ui.css">
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="openLayers/ol.js"></script>
-    <script type="text/javascript" src="jquery/jquery-3.1.1.min.js"></script>
-    <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="jquery/jquery-3.1.1.js"></script>
+    <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript" src="js/funciones.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyAR0YLSFwrEfkUUToM0KwxbfYxknCM6ygc"></script>
     <script src="openLayers/googleMaps/ol3gm.js"></script>
 </head>
 <body>
-    <div id="map" style="width: 100%; height: 760px" tabindex="0" class="map" onclick="ocultarPaneles()"></div>
+    <div id="map" style="position:relative; overflow: hidden; width: 100%; height: 750px; max-height: 100%"
+         tabindex="0" class="map" onclick="ocultarPaneles()"></div>
     <div id="boton-buscar" class="buscar ol-unselectable ol-control" onclick="panelBuscar()">
         <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar"
                data-toggle="tooltip">
@@ -103,6 +104,15 @@
     <div id="panel-capas-visibles"
          class="panel-capas-visibles ui-widget-content ui-corner-all ol-unselectable ol-control">
         <ul id="sortable" class="ul-capas-visibles"/>
+    </div>
+    <div id="panel-info-capas" class="panel-info-capas ui-widget-content ui-corner-all ol-unselectable ol-control">
+        <iframe id="info"></iframe>
+        <a href="#" class="exportar-info" id="exportar-info" onclick="exportarInfo()">
+            <img src="img/exportar.png" class="menu">
+        </a>
+        <a href="#" class="cerrar-panel-info" id="cerrar-panel-info" onclick="cerrarPanelInfo()">
+            <img src="img/cerrar.png" class="cerrar">
+        </a>
     </div>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/capasDGEyC.js"></script>
