@@ -23,7 +23,9 @@
                data-toggle="tooltip">
         <div id="panel-buscar" class="panel-buscar ui-widget-content ui-corner-all">
             <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa" oninput="resizeBuscar()">
-            <a href="#" onclick="borrarBuscar()"><img src="img/borrar.png" width="25px" height="25px"></a>
+            <a href="#" onclick="borrarBuscar()">
+                <img src="img/borrar.png" width="25px" height="25px" title="Borrar" data-toggle="tooltip">
+            </a>
         </div>
     </div>
     <div id="boton-capas" class="capas ol-unselectable ol-control">
@@ -105,13 +107,13 @@
          class="panel-capas-visibles ui-widget-content ui-corner-all ol-unselectable ol-control">
         <ul id="sortable" class="ul-capas-visibles"/>
     </div>
-    <div id="panel-info-capas" class="panel-info-capas ui-widget-content ui-corner-all ol-unselectable ol-control">
-        <iframe id="info"></iframe>
-        <a href="#" class="exportar-info" id="exportar-info" onclick="exportarInfo()">
-            <img src="img/exportar.png" class="menu">
+    <div id="panel-info-capas" class="panel-info-capas ui-widget-content ui-corner-all ol-unselectable ol-control" style="max-width: 30%">
+        <div id="info" class="col-lg-11"></div>
+        <a href="#" class="exportar-info col-lg-offset-0" id="exportar-info" onclick="exportarInfo()">
+            <img src="img/exportar.png" class="menu" title="Exportar" data-toggle="tooltip">
         </a>
-        <a href="#" class="cerrar-panel-info" id="cerrar-panel-info" onclick="cerrarPanelInfo()">
-            <img src="img/cerrar.png" class="cerrar">
+        <a href="#" class="cerrar-panel-info col-lg-offset-0" id="cerrar-panel-info" onclick="cerrarPanelInfo()">
+            <img src="img/cerrar.png" class="cerrar" title="Cerrar" data-toggle="tooltip">
         </a>
     </div>
     <script type="text/javascript" src="js/app.js"></script>

@@ -223,21 +223,56 @@ var map = new ol.Map({
     }),
 });
 
-map.on('singleclick', function(evt) {
-    var viewResolution = (map.getView().getResolution());
+gl_info = [];
+
+map.on('click', function(evt) {
+    var viewResolution = map.getView().getResolution();
+    var viewProjection = map.getView().getProjection();
     var layers = map.getLayers();
+    var multi_sel = false;
+    if (window.event.ctrlKey) {
+        multi_sel = true;
+    }
     layers.forEach(function (layer) {
-        if (layer.getVisible() && layer.get('type') != 'base'){
+        if (layer.get('title') == document.getElementById('sortable').firstChild.textContent){
             var url = layer.getSource().getGetFeatureInfoUrl(
-                evt.coordinate, viewResolution, 'EPSG:3857',
-                {'INFO_FORMAT': 'text/html'}
+                evt.coordinate, viewResolution, viewProjection,
+                {'INFO_FORMAT': 'text/javascript'}
             );
             if (url) {
                 if ($('#panel-info-capas').css('display') == 'none') {
                     $('#panel-info-capas').toggle('slide', {direction: 'up'}, 500);
                 }
-                var info = document.getElementById('info');
-                info.setAttribute('src', url);
+                var parser = new ol.format.GeoJSON();
+                $.ajax({
+                    url: url,
+                    dataType: 'jsonp',
+                    jsonpCallback: 'parseResponse'
+                }).then(function(response) {
+                    var result = parser.readFeatures(response);
+                    if (result.length) {
+                        var info = [];
+                        for (var i = 0, ii = result.length; i < ii; ++i) {
+                            var propiedades = result[i].getKeys();
+                            for (var j = 1; j < propiedades.length; ++j) {
+                                if (multi_sel) {
+                                    gl_info.push(propiedades[j] + ': ' + result[i].get(propiedades[j]));
+                                }
+                                else {
+                                    info.push(propiedades[j] + ': ' + result[i].get(propiedades[j]));
+                                }
+                            }
+                        }
+                        if (multi_sel) {
+                            document.getElementById('info').innerHTML = gl_info.join(', ');
+                        }
+                        else {
+                            document.getElementById('info').innerHTML = info.join(', ');
+                        }
+                    } else {
+                        document.getElementById('info').innerHTML = 'No existen datos para mostrar!';
+                    }
+                });
             }
         }
     });
@@ -268,22 +303,12 @@ $(document).ready(function() {
             })
         );
     }
-    /*map.addLayer(new ol.layer.Vector({
-        source: new ol.source.Vector({
-            url: 'https://openlayers.org/en/v3.20.1/examples/data/geojson/countries.geojson',
-            format: new ol.format.GeoJSON()
-        }),
-        type: 'info'
-    }));*/
 });
 
-/*//TODO prueba select
+//TODO prueba select
 
 // select interaction working on "click"
-var select = new ol.interaction.Select({
-    condition: ol.events.condition.click,
-    multi: true
-});
+/*var select = new ol.interaction.Select();
 
 map.addInteraction(select);
 select.on('select', function(e) {
