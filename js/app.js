@@ -223,61 +223,6 @@ var map = new ol.Map({
     }),
 });
 
-gl_info = [];
-
-map.on('click', function(evt) {
-    var viewResolution = map.getView().getResolution();
-    var viewProjection = map.getView().getProjection();
-    var layers = map.getLayers();
-    var multi_sel = false;
-    if (window.event.ctrlKey) {
-        multi_sel = true;
-    }
-    layers.forEach(function (layer) {
-        if (layer.get('title') == document.getElementById('sortable').firstChild.textContent){
-            var url = layer.getSource().getGetFeatureInfoUrl(
-                evt.coordinate, viewResolution, viewProjection,
-                {'INFO_FORMAT': 'text/javascript'}
-            );
-            if (url) {
-                if ($('#panel-info-capas').css('display') == 'none') {
-                    $('#panel-info-capas').toggle('slide', {direction: 'up'}, 500);
-                }
-                var parser = new ol.format.GeoJSON();
-                $.ajax({
-                    url: url,
-                    dataType: 'jsonp',
-                    jsonpCallback: 'parseResponse'
-                }).then(function(response) {
-                    var result = parser.readFeatures(response);
-                    if (result.length) {
-                        var info = [];
-                        for (var i = 0, ii = result.length; i < ii; ++i) {
-                            var propiedades = result[i].getKeys();
-                            for (var j = 1; j < propiedades.length; ++j) {
-                                if (multi_sel) {
-                                    gl_info.push(propiedades[j] + ': ' + result[i].get(propiedades[j]));
-                                }
-                                else {
-                                    info.push(propiedades[j] + ': ' + result[i].get(propiedades[j]));
-                                }
-                            }
-                        }
-                        if (multi_sel) {
-                            document.getElementById('info').innerHTML = gl_info.join(', ');
-                        }
-                        else {
-                            document.getElementById('info').innerHTML = info.join(', ');
-                        }
-                    } else {
-                        document.getElementById('info').innerHTML = 'No existen datos para mostrar!';
-                    }
-                });
-            }
-        }
-    });
-});
-
 var olGM = new olgm.OLGoogleMaps({map: map});
 olGM.activate();
 
@@ -299,18 +244,56 @@ $(document).ready(function() {
                     serverType: capas[x].serverType
                 }),
                 title: capas[x].title,
-                visible: capas[x].visible
+                visible: capas[x].visible,
+                name: capas[x].params['LAYERS']
             })
         );
     }
 });
 
-//TODO prueba select
-
-// select interaction working on "click"
-/*var select = new ol.interaction.Select();
-
+var featuresInteraction = new ol.Collection();
+// a normal select interaction to handle click
+var select = new ol.interaction.Select({
+    features: featuresInteraction
+});
 map.addInteraction(select);
 select.on('select', function(e) {
-    document.getElementById('info').innerHTML = '&nbsp;' + e.target.getFeatures().getLength();
-});*/
+    document.getElementById('tr_head').innerHTML = "";
+    document.getElementById('t_body').innerHTML = "";
+    fila = 0;
+    headers = '';
+    e.target.getFeatures().forEach(function(e){
+        var propiedades = e.getProperties();
+        cargarPropiedades(propiedades);
+    });
+    configPropiedades();
+});
+
+// a DragBox interaction used to select features by drawing boxes
+var dragBox = new ol.interaction.DragBox({
+    condition: ol.events.condition.platformModifierKeyOnly
+});
+map.addInteraction(dragBox);
+dragBox.on('boxend', function() {
+    document.getElementById('tr_head').innerHTML = "";
+    document.getElementById('t_body').innerHTML = "";
+    fila = 0;
+    headers = '';
+    var extent = dragBox.getGeometry().getExtent();
+    var map_layers = map.getLayers().getArray();
+    for (var i = 0; i < map_layers.length; ++i) {
+        if (map_layers[i].get('type') == 'feature') {
+            map_layers[i].get('source').forEachFeatureIntersectingExtent(extent, function(feature) {
+                featuresInteraction.push(feature);
+                var propiedades = feature.getProperties();
+                cargarPropiedades(propiedades);
+            });
+        }
+    }
+    configPropiedades();
+});
+
+// clear selection when drawing a new box and when clicking on the map
+dragBox.on('boxstart', function() {
+    featuresInteraction.clear();
+});

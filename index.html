@@ -14,10 +14,10 @@
     <script type="text/javascript" src="js/funciones.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyAR0YLSFwrEfkUUToM0KwxbfYxknCM6ygc"></script>
     <script src="openLayers/googleMaps/ol3gm.js"></script>
+    <script type="text/javascript" src="js/jquery.sortElements.js"></script>
 </head>
 <body>
-    <div id="map" style="position:relative; overflow: hidden; width: 100%; height: 750px; max-height: 100%"
-         tabindex="0" class="map" onclick="ocultarPaneles()"></div>
+    <div id="map" tabindex="0" class="map" onclick="ocultarPaneles()"></div>
     <div id="boton-buscar" class="buscar ol-unselectable ol-control" onclick="panelBuscar()">
         <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar"
                data-toggle="tooltip">
@@ -31,8 +31,7 @@
     <div id="boton-capas" class="capas ol-unselectable ol-control">
         <input id="capas" type="image" src="img/capas.png" width="25" height="25" title="Capas" data-toggle="tooltip">
         <div id="panel-capas" class="panel-capas ui-widget-content ui-corner-all">
-            <button id="capas-base" onclick="slidePanel('#panel-capas-base')" style="width: auto; height: 25px;
-                    padding: 5px">Capas Base</button>
+            <button id="capas-base" onclick="slidePanel('#panel-capas-base')">Capas Base</button>
             <div id="panel-capas-base" class="sub-panel-capas ui-widget-content ui-corner-all">
                 <img src="img/ign.png" width="25px" height="25px">
                 <input type="radio" name="capa" id="radio-cb-0" checked>
@@ -74,32 +73,26 @@
                 <input type="radio" name="capa" id="radio-cb-9">
                 <label for="radio-cb-9">Sin capa base</label>
             </div>
-            <button id="capas-dgeyc" onclick="slidePanel('#panel-capas-dgeyc')"
-                    style="width: auto; height: 25px; padding: 5px" data-toggle="tooltip"
+            <button id="capas-dgeyc" onclick="slidePanel('#panel-capas-dgeyc')" data-toggle="tooltip"
                     title="Dirección General de Estadística y Censos">DGEyC</button>
             <div id="panel-capas-dgeyc" class="sub-panel-capas ui-widget-content ui-corner-all">
-                <button id="capa-dgeyc-censos" name="capa-dgeyc" style="width: auto; height: 25px;
-                        padding: 5px">Censos</button>
+                <button id="capa-dgeyc-censos" name="capa-dgeyc">Censos</button>
             </div>
         </div>
     </div>
     <div id="panel-consulta" class="panel-consulta ui-widget-content ui-corner-all ol-unselectable ol-control">
-        <label for="speed">Select a speed</label>
+        <label for="speed">Año</label>
         <select name="speed" id="speed">
-            <option>Slower</option>
-            <option>Slow</option>
-            <option selected="selected">Medium</option>
-            <option>Fast</option>
-            <option>Faster</option>
+            <option>2012</option>
+            <option>2013</option>
+            <option selected="selected">2014</option>
         </select>
         <div>
-            <button class="col-lg-6" id="consulta-aceptar" style="position: relative; top: 20%;
-            left: 50%; width: 80px; height: 25px; padding: 5px;">Aceptar</button>
-            <button class="col-lg-6" id="consulta-cancelar" style="position: relative; top: 20%;
-            left: 50%; width: 80px; height: 25px; padding: 5px;">Cancelar</button>
+            <button class="col-lg-6" id="consulta-aceptar">Aceptar</button>
+            <button class="col-lg-6" id="consulta-cancelar">Cancelar</button>
         </div>
     </div>
-    <div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
+    <div id="boton-imprimir" class="imprimir ol-unselectable ol-control" onclick="imprimir()">
         <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
                data-toggle="tooltip">
     </div>
@@ -107,15 +100,98 @@
          class="panel-capas-visibles ui-widget-content ui-corner-all ol-unselectable ol-control">
         <ul id="sortable" class="ul-capas-visibles"/>
     </div>
-    <div id="panel-info-capas" class="panel-info-capas ui-widget-content ui-corner-all ol-unselectable ol-control" style="max-width: 30%">
-        <div id="info" class="col-lg-11"></div>
+    <div id="panel-leyenda" class="panel-leyenda ui-widget-content ui-corner-all ol-unselectable ol-control">
+        <img id="leyenda" src="">
+    </div>
+    <div id="panel-info-capas" class="panel-info-capas ui-widget-content ui-corner-all ol-unselectable ol-control">
+        <div id="info" class="col-lg-10 table-responsive">
+            <table id="tabla_info" class="table-bordered">
+                <thead>
+                <tr id="tr_head">
+                </tr>
+                </thead>
+                <tbody id="t_body">
+                </tbody>
+            </table>
+        </div>
         <a href="#" class="exportar-info col-lg-offset-0" id="exportar-info" onclick="exportarInfo()">
-            <img src="img/exportar.png" class="menu" title="Exportar" data-toggle="tooltip">
+            <img src="img/descargar.png" class="descargar" title="Exportar" data-toggle="tooltip">
         </a>
         <a href="#" class="cerrar-panel-info col-lg-offset-0" id="cerrar-panel-info" onclick="cerrarPanelInfo()">
             <img src="img/cerrar.png" class="cerrar" title="Cerrar" data-toggle="tooltip">
         </a>
     </div>
+    <div id="dialog-exportar" title="Exportar Capa">
+        <h4>WMS</h4>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-png">
+            PNG
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-png8">
+            PNG8
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-jpeg">
+            JPEG
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-jpeg-png">
+            JPEG-PNG
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-gif">
+            GIF
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-tiff">
+            TIFF
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-tiff8">
+            TIFF8
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-geotiff">
+            GeoTIFF
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-geotiff8">
+            GeoTIFF8
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-svg">
+            SVG
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-pdf">
+            PDF
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-georss">
+            GeoRSS
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-kml">
+            KML
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-kmz">
+            KMZ
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-ol">
+            OpenLayers
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-utfgrid">
+            UTFGrid
+        </a><br>
+        <h4>WFS</h4>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-shp">
+            SHAPE-ZIP
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-csv">
+            CSV
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-gml2">
+            GML2
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-gml3">
+            GML3
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-json">
+            JSON
+        </a><br>
+        <a href="#" class="exportar col-lg-offset-2" id="exp-jsonp">
+            JSONP
+        </a>
+    </div>
+    <div id="dialog-mensaje" title="Alerta"></div>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/capasDGEyC.js"></script>
     <script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
