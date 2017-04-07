@@ -19,7 +19,7 @@
 }
 
 #map {
-    position:relative;
+    position: absolute;
     overflow: auto;
     width: 100%;
     height: 100%;
@@ -69,13 +69,7 @@ label {
     top: 80px;
 }
 
-#capas-base, #capa-dgeyc-censos {
-    width: auto;
-    height: 25px;
-    padding: 5px;
-}
-
-#capas-dgeyc {
+#capas-base, #capa-dgeyc-censos, #capas-dgeyc{
     width: auto;
     height: 25px;
     padding: 5px;
@@ -85,7 +79,7 @@ label {
     display: none;
     width: auto;
     min-width: 350px;
-    max-width: 450px;
+    max-width: 480px;
     height: auto;
     max-height: 250px;
     top: 60%;
@@ -154,6 +148,7 @@ label {
     height: auto;
     width: auto;
     max-height: 250px;
+    max-width: 450px;
     margin-top:10px;
 }
 
@@ -164,4 +159,39 @@ label {
     width: 80px;
     height: 25px;
     padding: 5px;
+}
+
+.column {
+    padding: 5px;
+    background: #2aabd2;
+}
+
+th {
+    text-align: center;
+}
+
+.tabla-capas-serv {
+    margin-top: 5px;
+}
+
+#tabla-capas tr:hover
+{
+    background-color: #2aabd2;
+    color: white;
+}
+
+input.text, input.search {
+    margin-bottom:12px;
+    width:95%;
+    padding: .4em;
+}
+
+fieldset {
+    padding:0;
+    border:0;
+    margin-top:25px;
+}
+
+#input-buscar {
+    width: auto;
 }

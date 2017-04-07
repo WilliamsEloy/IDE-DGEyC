@@ -1,3 +1,205 @@
+$ (function () {
+    $("[name='capa']").on("change", seleccionarCapaBase);
+
+    var capasDisponibles = [];
+    for (var i = 0; i < capas.length; ++i) {
+        capasDisponibles[i] = capas[i]['title'];
+    }
+
+    $("#input-buscar").autocomplete({
+        source: capasDisponibles,
+        select: function (event, ui) {
+            seleccionarCapa(ui.item.value);
+        }
+    });
+
+    $("#input-buscar").on("search", function(){
+        seleccionarCapa($(this).val());
+    });
+
+    $( "#sortable" ).sortable({
+        revert: true,
+        stop: capaAlFrente
+    });
+
+    $("ul, li").disableSelection();
+
+    $(document).on('click', '.capa-visible', function(){
+        var id = $(this).parent().attr('id');
+        quitarCapaVisible(id);
+        $('#' + id).remove();
+        propiedadesCapaFrente();
+        return false;
+    });
+
+    $( "#dialog-mensaje" ).dialog({
+        autoOpen: false,
+        show: {
+            effect: "fade",
+            duration: 500
+        },
+        hide: {
+            effect: "fade",
+            duration: 500
+        }
+    });
+
+    $("#dialog-exportar").dialog({
+        autoOpen: false,
+        show: {
+            effect: "fade",
+            duration: 500
+        },
+        hide: {
+            effect: "fade",
+            duration: 500
+        }
+    });
+
+    $(document).on('click', '.descargar-capa', function(){
+        capaExportar = $(this).parent().text();
+        urlServExport(capaExportar);
+        $( "#dialog-exportar" ).dialog( "open" );
+        return false;
+    });
+
+    $("#dialog-agregar-capa").dialog({
+        autoOpen: false,
+        resizable: false,
+        height: 420,
+        width: "auto",
+        show: {
+            effect: "fade",
+            duration: 500
+        },
+        hide: {
+            effect: "fade",
+            duration: 500
+        },
+    });
+
+    $('#agregar-capa').on('click', function(){
+        $("#dialog-agregar-capa").dialog( "open" );
+        return false;
+    });
+
+    $('#servidor').selectmenu({
+        change: function( event, data ) {
+            cargarCapasServidor(data.item.value);
+        }
+    });
+
+    $(document).on('click', '.exportar', function(){
+        var formato = $(this).attr('id');
+        exportarCapa(formato);
+        return false;
+    });
+
+    $(document).on('click', '#tabla-capas tr', function(){
+        var existe = false;
+        var titulo = $(this).find('td:first').html();
+        if (titulo){
+            var map_layers = map.getLayers().getArray();
+            for (var i = 0; i < map_layers.length; ++i) {
+                if (map_layers[i].get('title') == titulo) {
+                    existe = true;
+                }
+            }
+            if (!existe){
+                var nombre = $(this).find('td:last').html();
+                map.addLayer(new ol.layer.Tile({
+                        source: new ol.source.TileWMS({
+                            url: url_serv,
+                            params: {LAYERS: nombre, TRANSPARENT: true, FORMAT: 'image/png', TILED: true},
+                            serverType: servidor
+                        }),
+                        title: titulo,
+                        visible: false,
+                        name: nombre
+                    })
+                );
+            }
+            seleccionarCapa(titulo);
+            $("#dialog-agregar-capa").dialog( "close" );
+        }
+    });
+
+    $("#dialog-agregar-servidor").dialog({
+        autoOpen: false,
+        height: 280,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Agregar": agregarServidor,
+            Cancel: function() {
+                $("#dialog-agregar-servidor").dialog( "close" );
+            }
+        },
+        close: function() {
+            $("#dialog-agregar-servidor").find( "form" )[0].reset();
+            allFields.removeClass("ui-state-error");
+        }
+    });
+
+    var nombre = $("#nombre"),
+        url = $("#url"),
+        allFields = $([]).add(nombre).add(url);
+
+    function campoValido(campo, min, max) {
+        if (campo.val().length > max || campo.val().length < min) {
+            campo.addClass("ui-state-error");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function agregarServidor() {
+        var valido = true;
+        allFields.removeClass("ui-state-error");
+
+        valido = valido && campoValido(nombre, 4, 16 );
+        valido = valido && campoValido(url, 10, 80 );
+
+        if (valido) {
+            var noExiste = true;
+            $("select[name='servidor'] > option").each(function () {
+                if(this.value == url[0].value) {
+                    noExiste = false;
+                }
+            });
+            if (noExiste){
+                var option = document.createElement('option');
+                option.setAttribute('value', url[0].value);
+                option.textContent = nombre[0].value;
+                document.getElementById('servidor').appendChild(option);
+                $('#servidor').selectmenu('refresh', true);
+                $('#servidor').val(url[0].value);
+                $('#servidor').selectmenu('refresh', true);
+                cargarCapasServidor(url[0].value);
+                $("#dialog-agregar-servidor").dialog( "close" );
+                /*$("#dialog-agregar-capa").dialog("widget").position({
+                    my: 'center center',
+                    at: 'center center',
+                    of: window
+                });*/
+            } else {
+                var txt = document.createTextNode('Ya fue agregado el servidor. ' + nombre[0].value + ': ' +
+                    url[0].value);
+                document.getElementById('dialog-mensaje').textContent = '';
+                document.getElementById('dialog-mensaje').appendChild(txt);
+                $( "#dialog-mensaje" ).dialog( "open" );
+            }
+        }
+        return valido;
+    }
+
+    $('#agregar-servidor').on('click', function(){
+        $("#dialog-agregar-servidor").dialog( "open" );
+        return false;
+    });
+});
+
 function seleccionarCapaBase() {
     var id = $(this).attr('id');
     var capa = $('label[for="' + id + '"]').text();
@@ -27,18 +229,8 @@ function seleccionarCapa(capa) {
     resizeBuscar();
     if (!existe){
         var txt = document.createTextNode('No existe un mapa relacionado a la busqueda.');
+        document.getElementById('dialog-mensaje').textContent = '';
         document.getElementById('dialog-mensaje').appendChild(txt);
-        $( "#dialog-mensaje" ).dialog({
-            autoOpen: false,
-            show: {
-                effect: "fade",
-                duration: 500
-            },
-            hide: {
-                effect: "fade",
-                duration: 500
-            }
-        });
         $( "#dialog-mensaje" ).dialog( "open" );
     }
     /*if ($('#panel-buscar').css('display') != 'none') {
@@ -69,12 +261,16 @@ function capaAlFrente(){
             map.getLayers().removeAt(i);
         }
     }
-    leyenda(map_layers[map_layers.length - 1].get('name'));
-    propiedadesCapa(map_layers[map_layers.length - 1].get('name'), map_layers[map_layers.length - 1].get('title'));
+    leyenda(map_layers[map_layers.length - 1].get('name'), map_layers[map_layers.length - 1].getSource().getUrls()[0]);
+    propiedadesCapa(map_layers[map_layers.length - 1].get('name'), map_layers[map_layers.length - 1].get('title'),
+        map_layers[map_layers.length - 1].getSource().getUrls()[0]);
+    cerrarPanelInfo();
 }
 
-function propiedadesCapa(capa, titulo) {
-    var capa = capa.substr(6, capa.length);
+function propiedadesCapa(nombre_capa, titulo, url) {
+    var array = nombre_capa.split(':');
+    var capa = array[1];
+    var prefix = array[0];
     var vectorSource = new ol.source.Vector();
     var vector = new ol.layer.Vector({
         source: vectorSource,
@@ -91,13 +287,13 @@ function propiedadesCapa(capa, titulo) {
 
     var featureRequest = new ol.format.WFS().writeGetFeature({
         srsName: 'EPSG:3857',
-        featureNS: 'http://www.dgeyc.com/rural',
-        featurePrefix: 'rural',
+        //featureNS: 'http://www.dgeyc.com/rural',
+        featurePrefix: prefix,
         featureTypes: [capa],
         outputFormat: 'application/json'
     });
 
-    fetch('http://127.0.0.1:8080/geoserver/wfs', {
+    fetch(url, {
         method: 'POST',
         body: new XMLSerializer().serializeToString(featureRequest)
     }).then(function(response) {
@@ -117,15 +313,15 @@ function propiedadesCapaFrente() {
     for (var i = 0; i < map_layers.length; ++i) {
         if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature'){
             if (map_layers[i].get('title') == capa){
-                propiedadesCapa(map_layers[i].get('name'), map_layers[i].get('title'));
-                leyenda(map_layers[i].get('name'));
+                propiedadesCapa(map_layers[i].get('name'), map_layers[i].get('title'), map_layers[i].getSource().getUrls()[0]);
+                leyenda(map_layers[i].get('name'), map_layers[i].getSource().getUrls()[0]);
             }
         }
     }
 }
 
-function leyenda(capa) {
-    var request = 'http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=';
+function leyenda(capa, url) {
+    var request = url + '?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=';
     var leyenda = document.getElementById('leyenda');
     leyenda.setAttribute('src', request + capa);
     if ($('#panel-leyenda').css('display') == 'none') {
@@ -162,55 +358,16 @@ function borrarBuscar() {
     resizeBuscar();
 }
 
-$ (function () {
-    $("[name='capa']").on("change", seleccionarCapaBase);
-    var capasDisponibles = [];
-    for (var i = 0; i < capas.length; ++i) {
-        capasDisponibles[i] = capas[i]['title'];
+function urlServExport(capaExportar) {
+    var map_layers = map.getLayers().getArray();
+    for (var i = 0; i < map_layers.length; ++i) {
+        if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature'){
+            if (map_layers[i].get('title') == capaExportar) {
+                serv_export = map_layers[i].getSource().getUrls()[0];
+            }
+        }
     }
-    $("#input-buscar").autocomplete({
-        source: capasDisponibles,
-        select: function (event, ui) {
-            seleccionarCapa(ui.item.value);
-        }
-    });
-    $("#input-buscar").on("search", function(){
-        seleccionarCapa($(this).val());
-    });
-    $( "#sortable" ).sortable({
-        revert: true,
-        stop: capaAlFrente
-    });
-    $("ul, li").disableSelection();
-    $(document).on('click', '.capa-visible', function(){
-        var id = $(this).parent().attr('id');
-        quitarCapaVisible(id);
-        $('#' + id).remove();
-        propiedadesCapaFrente();
-        return false;
-    });
-    $( "#dialog-exportar" ).dialog({
-        autoOpen: false,
-        show: {
-            effect: "fade",
-            duration: 500
-        },
-        hide: {
-            effect: "fade",
-            duration: 500
-        }
-    });
-    $(document).on('click', '.descargar-capa', function(){
-        capaExportar = $(this).parent().text();
-        $( "#dialog-exportar" ).dialog( "open" );
-        return false;
-    });
-    $(document).on('click', '.exportar', function(){
-        var formato = $(this).attr('id');
-        exportarCapa(formato);
-        return false;
-    });
-});
+}
 
 function panelBuscar() {
     if ($('#panel-capas').css('display') != 'none') {
@@ -280,12 +437,14 @@ function agregarCapaVisible(titulo) {
 }
 
 function cerrarPanelInfo() {
-    $('#panel-info-capas').toggle('slide', {direction: 'up'}, 500);
-    featuresInteraction.clear();
+    if ($('#panel-info-capas').css('display') != 'none') {
+        $('#panel-info-capas').toggle('slide', {direction: 'up'}, 500);
+        featuresInteraction.clear();
+    }
 }
 
 function WMSexport(link, requestWMS, capa, formato) {
-    var url = 'http://127.0.0.1:8080/geoserver/wms?request=GetCapabilities&service=WMS&version=1.3.0';
+    var url = serv_export + '?request=GetCapabilities&service=WMS&version=1.3.0';
     var parser = new ol.format.WMSCapabilities();
     $.ajax(url).then(function (response) {
         var result = parser.read(response);
@@ -307,28 +466,27 @@ function WMSexport(link, requestWMS, capa, formato) {
         var encodedUri = encodeURI(requestWMS);
         link.setAttribute("href", encodedUri);
         link.setAttribute("target", "_blank");
-        document.body.appendChild(link);
         link.click();
     });
 }
 
 function exportarCapa(formato) {
-    var requestWMS = 'http://127.0.0.1:8080/geoserver/wms?service=wms&version=1.1.1&request=getmap&SRS=EPSG:4326&WIDTH=780&HEIGHT=330&layers=';
-    var requestWFS = 'http://127.0.0.1:8080/geoserver/wfs?request=getfeature&service=wfs&version=2.0.0&typename=';
+    var requestWMS = serv_export + '?service=wms&version=1.1.1&request=getmap&SRS=EPSG:4326&WIDTH=780&HEIGHT=330&layers=';
+    var requestWFS = serv_export + '?request=getfeature&service=wfs&version=2.0.0&typename=';
     var map_layers = map.getLayers().getArray();
     for (var i = 0; i < map_layers.length; ++i) {
         if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature') {
             if (map_layers[i].get('title') === capaExportar) {
                 var capa = map_layers[i].get('name');
-                var encodedUri;
+                var encodedUrl;
                 var link = document.createElement("a");
                 var wfs = false;
                 if (formato == 'exp-png'){
                     WMSexport(link, requestWMS, capa, '&format=image/png');
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                 }
                 else if (formato == 'exp-png8'){
-                    WMSexport(link, requestWMS, capa, '&FORMAT=image/png8');
+                    WMSexport(link, requestWMS, capa, '&format=image/png8');
                 }
                 else if (formato == 'exp-jpeg'){
                     WMSexport(link, requestWMS, capa, '&format=image/jpeg');
@@ -374,38 +532,37 @@ function exportarCapa(formato) {
                 }
                 else if (formato == 'exp-shp') {
                     requestWFS = requestWFS + capa + '&outputformat=shape-zip';
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                     wfs = true;
                 }
                 else if (formato == 'exp-csv'){
                     requestWFS = requestWFS + capa + '&outputformat=csv';
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                     wfs = true;
                 }
                 else if (formato == 'exp-gml2'){
                     requestWFS = requestWFS + capa + '&outputformat=gml2';
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                     wfs = true;
                 }
                 else if (formato == 'exp-gml3'){
                     requestWFS = requestWFS + capa + '&outputformat=gml3';
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                     wfs = true;
                 }
                 else if (formato == 'exp-json'){
                     requestWFS = requestWFS + capa + '&outputformat=application/json';
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                     wfs = true;
                 }
                 else if (formato == 'exp-jsonp'){
                     requestWFS = requestWFS + capa + '&outputformat=text/javascript';
-                    encodedUri = encodeURI(requestWFS);
+                    encodedUrl = encodeURI(requestWFS);
                     wfs = true;
                 }
                 if (wfs) {
-                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("href", encodedUrl);
                     link.setAttribute("target", "_blank");
-                    document.body.appendChild(link);
                     link.click();
                 }
             }
@@ -501,4 +658,31 @@ function configPropiedades() {
                 });
             });
     }
+}
+
+url_serv = '';
+servidor = 'geoserver'; //TODO tener en cuenta que agreguen un mapserver
+function cargarCapasServidor(serv) {
+    url_serv = serv;
+    var parser = new ol.format.WMSCapabilities();
+    var url = url_serv + '?request=GetCapabilities&service=WMS&version=1.3.0';
+    $.ajax(url).then(function (response) {
+        var result = parser.read(response);
+        var Layers = result.Capability.Layer.Layer;
+        document.getElementById('t_capas_body').innerHTML = '';
+        for (var i = 0, len = Layers.length; i < len; i++) {
+            var layerobj = Layers[i];
+            var tr = document.createElement('tr');
+            tr.setAttribute('id', 'capa_serv_' + i);
+            document.getElementById('t_capas_body').appendChild(tr);
+            var td_titulo = document.createElement('td');
+            td_titulo.setAttribute('style', 'padding: 5px');
+            td_titulo.textContent = layerobj.Title;
+            document.getElementById('capa_serv_' + i).appendChild(td_titulo);
+            var td_nombre = document.createElement('td');
+            td_nombre.setAttribute('style', 'padding: 5px');
+            td_nombre.textContent = layerobj.Name;
+            document.getElementById('capa_serv_' + i).appendChild(td_nombre);
+        }
+    });
 }

@@ -226,11 +226,17 @@ var map = new ol.Map({
 var olGM = new olgm.OLGoogleMaps({map: map});
 olGM.activate();
 
-$('.ol-zoom-in, .ol-zoom-out').tooltip({
+$('.agregar-servidor').tooltip({
+    placement: 'left',
+    trigger : 'hover'
+});
+
+$('[data-toggle="tooltip"]').tooltip({
     placement: 'right',
     trigger : 'hover'
 });
-$('[data-toggle="tooltip"]').tooltip({
+
+$('.ol-zoom-in, .ol-zoom-out').tooltip({
     placement: 'right',
     trigger : 'hover'
 });

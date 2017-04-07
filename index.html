@@ -11,9 +11,9 @@
     <script type="text/javascript" src="openLayers/ol.js"></script>
     <script type="text/javascript" src="jquery/jquery-3.1.1.js"></script>
     <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
-    <script type="text/javascript" src="js/funciones.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyAR0YLSFwrEfkUUToM0KwxbfYxknCM6ygc"></script>
     <script src="openLayers/googleMaps/ol3gm.js"></script>
+    <script type="text/javascript" src="js/funciones.js"></script>
     <script type="text/javascript" src="js/jquery.sortElements.js"></script>
 </head>
 <body>
@@ -22,7 +22,8 @@
         <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar"
                data-toggle="tooltip">
         <div id="panel-buscar" class="panel-buscar ui-widget-content ui-corner-all">
-            <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa" oninput="resizeBuscar()">
+            <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa" oninput="resizeBuscar()"
+                   class="search ui-widget-content ui-corner-all">
             <a href="#" onclick="borrarBuscar()">
                 <img src="img/borrar.png" width="25px" height="25px" title="Borrar" data-toggle="tooltip">
             </a>
@@ -78,6 +79,8 @@
             <div id="panel-capas-dgeyc" class="sub-panel-capas ui-widget-content ui-corner-all">
                 <button id="capa-dgeyc-censos" name="capa-dgeyc">Censos</button>
             </div>
+            <input id="agregar-capa" class="agregar-capa" type="image" src="img/agregar-capa.png" width="35" height="35"
+                   title="Agregar Capa" data-toggle="tooltip">
         </div>
     </div>
     <div id="panel-consulta" class="panel-consulta ui-widget-content ui-corner-all ol-unselectable ol-control">
@@ -190,6 +193,43 @@
         <a href="#" class="exportar col-lg-offset-2" id="exp-jsonp">
             JSONP
         </a>
+    </div>
+    <div id="dialog-agregar-capa" title="Agregar Capa">
+        <label for="servidor">Servidor</label>
+        <select name="servidor" id="servidor">
+            <option disabled selected>Seleccione un servidor</option>
+            <option value="http://catastro.chubut.gov.ar/geoserver/wms">Dirección General de Catastro e Información Territorial</option>
+            <option value="http://www.mapaeducativo.edu.ar/geoserver/ogc/ows">Mapa Educativo Nacional</option>
+            <option value="http://wms.ign.gob.ar/geoserver/ows">Instituto Geográfico Nacional</option>
+            <option value="http://sig.se.gob.ar/wmsenergia">Secretaría de Energía</option>
+            <option value="http://geoservicios.indec.gov.ar/geoserver/wms">INDEC</option>
+        </select>
+        <input id="agregar-servidor" class="agregar-servidor" type="image" src="img/agregar-servidor.png" width="35"
+               height="35" title="Agregar Servidor" data-toggle="tooltip">
+        <div id="capas-servidor" class="tabla-capas-serv table-responsive">
+            <table id="tabla-capas" class="table-bordered">
+                <thead>
+                <tr>
+                    <th class="column">Título</th>
+                    <th class="column">Nombre</th>
+                </tr>
+                </thead>
+                <tbody id="t_capas_body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="dialog-agregar-servidor" title="Agregar Servidor">
+        <form>
+            <fieldset>
+                <label for="nombre">Nombre</label>
+                <input type="text" name="nombre" id="nombre" placeholder="mínimo 4 caracteres"
+                       class="text ui-widget-content ui-corner-all">
+                <label for="url">Url</label>
+                <input type="text" name="url" id="url" placeholder="mínimo 10 caracteres"
+                       class="text ui-widget-content ui-corner-all">
+            </fieldset>
+        </form>
     </div>
     <div id="dialog-mensaje" title="Alerta"></div>
     <script type="text/javascript" src="js/app.js"></script>
