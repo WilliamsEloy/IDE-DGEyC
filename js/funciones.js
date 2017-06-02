@@ -10,6 +10,11 @@ $ (function () {
         source: capasDisponibles,
         select: function (event, ui) {
             seleccionarCapa(ui.item.value);
+        },
+        close: function (event, ui) {
+            if ($('#dialog-mensaje').dialog('isOpen') != true){
+                borrarBuscar();
+            }
         }
     });
 
@@ -78,8 +83,19 @@ $ (function () {
         },
     });
 
+    /*$("#dialog-agregar-capa").resizable({
+        stop: function( event, ui ) {
+            $("#dialog-agregar-capa").dialog("widget").position({
+                my: 'center center',
+                at: 'center center',
+                of: window
+            });
+        }
+    });*/
+
     $('#agregar-capa').on('click', function(){
         $("#dialog-agregar-capa").dialog( "open" );
+        slidePanel('#panel-capas');
         return false;
     });
 
@@ -92,6 +108,7 @@ $ (function () {
     $(document).on('click', '.exportar', function(){
         var formato = $(this).attr('id');
         exportarCapa(formato);
+        $('#dialog-exportar').dialog('close');
         return false;
     });
 
@@ -159,33 +176,29 @@ $ (function () {
         allFields.removeClass("ui-state-error");
 
         valido = valido && campoValido(nombre, 4, 16 );
-        valido = valido && campoValido(url, 10, 80 );
+        valido = valido && campoValido(url, 10, 200 );
 
         if (valido) {
+            var url_serv_carg = url[0].value;
+            var nombre_serv_carg = nombre[0].value;
             var noExiste = true;
             $("select[name='servidor'] > option").each(function () {
-                if(this.value == url[0].value) {
+                if(this.value == url_serv_carg) {
                     noExiste = false;
                 }
             });
             if (noExiste){
                 var option = document.createElement('option');
-                option.setAttribute('value', url[0].value);
-                option.textContent = nombre[0].value;
+                option.setAttribute('value', url_serv_carg);
+                option.textContent = nombre_serv_carg;
                 document.getElementById('servidor').appendChild(option);
                 $('#servidor').selectmenu('refresh', true);
-                $('#servidor').val(url[0].value);
+                $('#servidor').val(url_serv_carg);
                 $('#servidor').selectmenu('refresh', true);
-                cargarCapasServidor(url[0].value);
                 $("#dialog-agregar-servidor").dialog( "close" );
-                /*$("#dialog-agregar-capa").dialog("widget").position({
-                    my: 'center center',
-                    at: 'center center',
-                    of: window
-                });*/
+                cargarCapasServidor(url_serv_carg);
             } else {
-                var txt = document.createTextNode('Ya fue agregado el servidor. ' + nombre[0].value + ': ' +
-                    url[0].value);
+                var txt = document.createTextNode('Ya fue agregado el servidor. ' + nombre_serv_carg + ': ' + url_serv_carg);
                 document.getElementById('dialog-mensaje').textContent = '';
                 document.getElementById('dialog-mensaje').appendChild(txt);
                 $( "#dialog-mensaje" ).dialog( "open" );
@@ -206,6 +219,8 @@ function seleccionarCapaBase() {
     for (var i = 0, ii = nro_capas_base; i < ii; ++i) {
         layers[i].setVisible(layers[i].get('title') === capa);
     }
+    $('#panel-capas').toggle('slide', {}, 500);
+    $('#panel-capas-base').toggle('slide', {}, 500);
 }
 
 function seleccionarCapa(capa) {
@@ -226,19 +241,25 @@ function seleccionarCapa(capa) {
             }
         }
     }
-    resizeBuscar();
     if (!existe){
         var txt = document.createTextNode('No existe un mapa relacionado a la busqueda.');
         document.getElementById('dialog-mensaje').textContent = '';
         document.getElementById('dialog-mensaje').appendChild(txt);
         $( "#dialog-mensaje" ).dialog( "open" );
+    } else {
+        if ($('#panel-buscar').css('display') != 'none') {
+            $('#panel-buscar').toggle('slide', {}, 500);
+        }
     }
-    /*if ($('#panel-buscar').css('display') != 'none') {
-        $('#panel-buscar').toggle('slide', {}, 500);
-    }*/
 }
 
 function slidePanel(panel) {
+    if ($('#panel-capas-base').css('display') != 'none' & panel != '#panel-capas-base'){
+        $('#panel-capas-base').toggle('slide', {}, 500);
+    }
+    if ($('#panel-capas-dgeyc').css('display') != 'none' & panel != '#panel-capas-dgeyc'){
+        $('#panel-capas-dgeyc').toggle('slide', {}, 500);
+    }
     $(panel).toggle('slide', {}, 500);
 }
 
@@ -267,44 +288,62 @@ function capaAlFrente(){
     cerrarPanelInfo();
 }
 
+vect_prop = [];
 function propiedadesCapa(nombre_capa, titulo, url) {
-    var array = nombre_capa.split(':');
-    var capa = array[1];
-    var prefix = array[0];
-    var vectorSource = new ol.source.Vector();
-    var vector = new ol.layer.Vector({
-        source: vectorSource,
-        style: new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: 'rgba(0, 0, 0, 0)',
-                width: 2
-            })
-        }),
-        type: 'feature',
-        title: titulo
-    });
-    map.addLayer(vector);
+    var existe = -1;
+    for (var i = 0; i < vect_prop.length; ++i) {
+        if (vect_prop[i].get('title') == titulo){
+            existe = i;
+        }
+    }
+    if (existe > -1){
+        var map_layers = map.getLayers().getArray();
+        map.getLayers().setAt(map_layers.length, vect_prop[existe]);
+    } else {
+        $('#cargando').show();
+        setTimeout(function(){
+            $('#cargando').hide();
+        }, 60000);
+        var array = nombre_capa.split(':');
+        var capa = array[1];
+        var prefix = array[0];
+        var vectorSource = new ol.source.Vector();
+        var vector = new ol.layer.Vector({
+            source: vectorSource,
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(0, 0, 0, 0)',
+                    width: 2
+                })
+            }),
+            type: 'feature',
+            title: titulo
+        });
+        map.addLayer(vector);
+        vect_prop.push(vector);
 
-    var featureRequest = new ol.format.WFS().writeGetFeature({
-        srsName: 'EPSG:3857',
-        //featureNS: 'http://www.dgeyc.com/rural',
-        featurePrefix: prefix,
-        featureTypes: [capa],
-        outputFormat: 'application/json'
-    });
+        var featureRequest = new ol.format.WFS().writeGetFeature({
+            srsName: 'EPSG:3857',
+            //featureNS: 'http://www.dgeyc.com/rural',
+            featurePrefix: prefix,
+            featureTypes: [capa],
+            outputFormat: 'application/json'
+        });
 
-    fetch(url, {
-        method: 'POST',
-        body: new XMLSerializer().serializeToString(featureRequest)
-    }).then(function(response) {
-        return response.json();
-    }).then(function(json) {
-        var features = new ol.format.GeoJSON().readFeatures(json);
-        vectorSource.addFeatures(features);
-        map.getView().fit(vectorSource.getExtent());
-    });
+        fetch(url, {
+            method: 'POST',
+            body: new XMLSerializer().serializeToString(featureRequest)
+        }).then(function(response) {
+            return response.json();
+        }).then(function(json) {
+            var features = new ol.format.GeoJSON().readFeatures(json);
+            vectorSource.addFeatures(features);
+            $('#cargando').hide();
+            map.getView().fit(vectorSource.getExtent());
+        });
 
-    featuresInteraction.extend(vectorSource.getFeatures());
+        featuresInteraction.extend(vectorSource.getFeatures());
+    }
 }
 
 function propiedadesCapaFrente() {
@@ -663,6 +702,17 @@ function configPropiedades() {
 url_serv = '';
 servidor = 'geoserver'; //TODO tener en cuenta que agreguen un mapserver
 function cargarCapasServidor(serv) {
+    error = true;
+    $('#cargando-capas').show();
+    setTimeout(function(){
+        $('#cargando-capas').hide();
+        if (error) {
+            document.getElementById('servidor').removeChild(document.getElementById('servidor').lastChild);
+            $('#servidor').selectmenu('refresh', true);
+            $('#servidor').val('sel_serv');
+            $('#servidor').selectmenu('refresh', true);
+        }
+    }, 60000);
     url_serv = serv;
     var parser = new ol.format.WMSCapabilities();
     var url = url_serv + '?request=GetCapabilities&service=WMS&version=1.3.0';
@@ -684,5 +734,7 @@ function cargarCapasServidor(serv) {
             td_nombre.textContent = layerobj.Name;
             document.getElementById('capa_serv_' + i).appendChild(td_nombre);
         }
+        $('#cargando-capas').hide();
+        error = false;
     });
 }

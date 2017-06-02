@@ -104,6 +104,8 @@ app.PanelConsultaControl = function(opt_options) {
 
     var handlePanelConsulta = function() {
         $('#panel-consulta').toggle('slide', {direction:'up'}, 500);
+        $('#panel-capas-dgeyc').toggle('slide', {}, 500);
+        $('#panel-capas').toggle('slide', {}, 500);
     };
 
     button.addEventListener('click', handlePanelConsulta, false);
@@ -255,6 +257,8 @@ $(document).ready(function() {
             })
         );
     }
+    $('#cargando').hide();
+    $('#cargando-capas').hide();
 });
 
 var featuresInteraction = new ol.Collection();

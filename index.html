@@ -99,12 +99,12 @@
         <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
                data-toggle="tooltip">
     </div>
+    <div id="panel-leyenda" class="panel-leyenda ui-widget-content ui-corner-all ol-unselectable ol-control">
+        <img id="leyenda" src="">
+    </div>
     <div id="panel-capas-visibles"
          class="panel-capas-visibles ui-widget-content ui-corner-all ol-unselectable ol-control">
         <ul id="sortable" class="ul-capas-visibles"/>
-    </div>
-    <div id="panel-leyenda" class="panel-leyenda ui-widget-content ui-corner-all ol-unselectable ol-control">
-        <img id="leyenda" src="">
     </div>
     <div id="panel-info-capas" class="panel-info-capas ui-widget-content ui-corner-all ol-unselectable ol-control">
         <div id="info" class="col-lg-10 table-responsive">
@@ -197,7 +197,7 @@
     <div id="dialog-agregar-capa" title="Agregar Capa">
         <label for="servidor">Servidor</label>
         <select name="servidor" id="servidor">
-            <option disabled selected>Seleccione un servidor</option>
+            <option disabled selected value="sel_serv">Seleccione un servidor</option>
             <option value="http://catastro.chubut.gov.ar/geoserver/wms">Dirección General de Catastro e Información Territorial</option>
             <option value="http://www.mapaeducativo.edu.ar/geoserver/ogc/ows">Mapa Educativo Nacional</option>
             <option value="http://wms.ign.gob.ar/geoserver/ows">Instituto Geográfico Nacional</option>
@@ -206,6 +206,7 @@
         </select>
         <input id="agregar-servidor" class="agregar-servidor" type="image" src="img/agregar-servidor.png" width="35"
                height="35" title="Agregar Servidor" data-toggle="tooltip">
+        <img id="cargando-capas" src="img/loading.gif" width="35" height="35">
         <div id="capas-servidor" class="tabla-capas-serv table-responsive">
             <table id="tabla-capas" class="table-bordered">
                 <thead>
@@ -228,10 +229,12 @@
                 <label for="url">Url</label>
                 <input type="text" name="url" id="url" placeholder="mínimo 10 caracteres"
                        class="text ui-widget-content ui-corner-all">
+                <!---<div id="cargando"><img src="img/loading.gif" width="35" height="35"></div>-->
             </fieldset>
         </form>
     </div>
     <div id="dialog-mensaje" title="Alerta"></div>
+    <div id="cargando"/>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/capasDGEyC.js"></script>
     <script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
