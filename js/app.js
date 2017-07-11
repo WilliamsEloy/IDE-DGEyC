@@ -96,7 +96,7 @@ ol.inherits(app.CapasControl, ol.control.Control);
  * @constructor
  */
 
-app.PanelConsultaControl = function(opt_options) {
+/*app.PanelConsultaControl = function(opt_options) {
 
     var options = opt_options || {};
 
@@ -119,7 +119,7 @@ app.PanelConsultaControl = function(opt_options) {
     });
 };
 
-ol.inherits(app.PanelConsultaControl, ol.control.Control);
+ol.inherits(app.PanelConsultaControl, ol.control.Control);*/
 
 /**
  * Layers (capas base)
@@ -214,7 +214,7 @@ var map = new ol.Map({
     controls: ol.control.defaults().extend([
         new app.ImprimirControl(),
         new app.CapasControl(),
-        new app.PanelConsultaControl(),
+        //new app.PanelConsultaControl(),
         new app.BuscarControl()
     ]),
     view: new ol.View({

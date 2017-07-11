@@ -97,7 +97,7 @@ label {
     left: 70%;
     padding: 0.4em;
     border: 2px solid #2aabd2;
-    max-height: 140px;
+    max-height: 120px;
     max-width: 360px;
     overflow: auto;
 }
@@ -150,8 +150,8 @@ label {
     overflow: auto;
     height: auto;
     width: auto;
-    max-height: 250px;
-    max-width: 450px;
+    max-height: 230px;
+    max-width: 380px;
     margin-top:10px;
 }
 
