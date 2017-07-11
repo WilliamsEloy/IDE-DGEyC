@@ -128,8 +128,8 @@ ol.inherits(app.PanelConsultaControl, ol.control.Control);*/
 var layers = [
     new ol.layer.Tile({
         source: new ol.source.TileWMS({
-            url: 'http://ide.estadistica.chubut.gov.ar/geoserver/wms',
-            params: {layers: "rural:basemap", transparent: 'false', format: 'image/jpeg', tiled: 'true'},
+            url: 'http://wms.ign.gob.ar/geoserver/wms?',
+            params: {layers: "capabaseargenmap", transparent: 'false', format: 'image/jpeg', tiled: 'true'},
             serverType: 'geoserver'
         }),
         visible: true,
