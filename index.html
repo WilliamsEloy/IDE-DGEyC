@@ -17,9 +17,14 @@
     <script type="text/javascript" src="js/jquery.sortElements.js"></script>
 </head>
 <body>
+    <div id="banner" class="row">
+        <a class="col-lg-2" href="http://www.estadistica.chubut.gov.ar" target="_blank"><img id="logo_dgeyc" src="img/logo_dgeyc.png"></a>
+        <h1 class="col-lg-8" id="titulo_banner">IDE DGEyC - Infraestructura de Datos Espaciales</h3>
+        <a class="col-lg-2" href="http://www.chubut.gov.ar" target="_blank"><img id="logo_chubut" src="img/logo_chubut.png"></a>
+    </div>
     <div id="map" tabindex="0" class="map" onclick="ocultarPaneles()"></div>
-    <div id="boton-buscar" class="buscar ol-unselectable ol-control" onclick="panelBuscar()">
-        <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar"
+    <div id="boton-buscar" class="buscar ol-unselectable ol-control">
+        <input id="buscar" type="image" src="img/buscar.png" width="25" height="25" title="Buscar Capa"
                data-toggle="tooltip">
         <div id="panel-buscar" class="panel-buscar ui-widget-content ui-corner-all">
             <input id="input-buscar" type="search" placeholder="Ingrese nombre de la capa" oninput="resizeBuscar()"
@@ -74,11 +79,14 @@
                 <input type="radio" name="capa" id="radio-cb-9">
                 <label for="radio-cb-9">Sin capa base</label>
             </div>
-            <!--<button id="capas-dgeyc" onclick="slidePanel('#panel-capas-dgeyc')" data-toggle="tooltip"
+            <button id="capas-dgeyc" onclick="slidePanel('#panel-capas-dgeyc')" data-toggle="tooltip"
                     title="Dirección General de Estadística y Censos">DGEyC</button>
             <div id="panel-capas-dgeyc" class="sub-panel-capas ui-widget-content ui-corner-all">
-                <button id="capa-dgeyc-censos" name="capa-dgeyc">Censos</button>
-            </div>-->
+                <button id="capa-dgeyc-poblacion" class="dgeyc-subcat">Población</button>
+                <button id="capa-dgeyc-territorio" class="dgeyc-subcat">Territorio</button>
+                <button id="capa-dgeyc-economia" class="dgeyc-subcat">Economía</button>
+                <button id="capa-dgeyc-sociedad" class="dgeyc-subcat">Sociedad</button>
+            </div>
             <input id="agregar-capa" class="agregar-capa" type="image" src="img/agregar-capa.png" width="35" height="35"
                    title="Agregar Capa" data-toggle="tooltip">
         </div>
@@ -95,9 +103,12 @@
             <button class="col-lg-6" id="consulta-cancelar">Cancelar</button>
         </div>
     </div>-->
-    <div id="boton-imprimir" class="imprimir ol-unselectable ol-control" onclick="imprimir()">
-        <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir"
-               data-toggle="tooltip">
+    <div id="boton-imprimir" class="imprimir ol-unselectable ol-control">
+        <input id="imprimir" type="image" src="img/impresora.png" width="25" height="25" title="Imprimir" 
+        data-toggle="tooltip">
+    </div>
+    <div id="boton-ayuda" class="ayuda ol-unselectable ol-control">
+        <input id="ayuda" type="image" src="img/ayuda.png" width="25" height="25" title="Ayuda" data-toggle="tooltip">
     </div>
     <div id="panel-leyenda" class="panel-leyenda ui-widget-content ui-corner-all ol-unselectable ol-control">
         <img id="leyenda" src="">
@@ -118,7 +129,7 @@
             </table>
         </div>
         <a href="#" class="exportar-info col-lg-offset-0" id="exportar-info" onclick="exportarInfo()">
-            <img src="img/descargar.png" class="descargar" title="Exportar" data-toggle="tooltip">
+            <img src="img/descargar.png" class="descargar" title="Exportar Información" data-toggle="tooltip">
         </a>
         <a href="#" class="cerrar-panel-info col-lg-offset-0" id="cerrar-panel-info" onclick="cerrarPanelInfo()">
             <img src="img/cerrar.png" class="cerrar" title="Cerrar" data-toggle="tooltip">
@@ -199,9 +210,9 @@
         <select name="servidor" id="servidor">
             <option disabled selected value="sel_serv">Seleccione un servidor</option>
             <option value="http://catastro.chubut.gov.ar/geoserver/wms">Dirección General de Catastro e Información Territorial</option>
-            <option value="http://www.mapaeducativo.edu.ar/geoserver/ogc/ows">Mapa Educativo Nacional</option>
-            <option value="http://wms.ign.gob.ar/geoserver/ows">Instituto Geográfico Nacional</option>
-            <option value="http://sig.se.gob.ar/wmsenergia">Secretaría de Energía</option>
+            <option value="http://mapa.sedronar.gov.ar/geoserver/wms">SEDRONAR</option>
+            <option value="http://wms.ign.gob.ar/geoserver/wms">Instituto Geográfico Nacional</option>
+            <option value="https://geonode.senasa.gob.ar/geoserver/wms">SENASA</option>
             <option value="http://geoservicios.indec.gov.ar/geoserver/wms">INDEC</option>
         </select>
         <input id="agregar-servidor" class="agregar-servidor" type="image" src="img/agregar-servidor.png" width="35"
@@ -224,16 +235,107 @@
         <form>
             <fieldset>
                 <label for="nombre">Nombre</label>
-                <input type="text" name="nombre" id="nombre" placeholder="mínimo 4 caracteres"
+                <input type="text" name="nombre" id="nombre" placeholder="mínimo 1 caracteres"
                        class="text ui-widget-content ui-corner-all">
                 <label for="url">Url</label>
-                <input type="text" name="url" id="url" placeholder="mínimo 10 caracteres"
+                <input type="text" name="url" id="url" placeholder="http://ide.estadistica.chubut.gov.ar/geoserver/wms"
                        class="text ui-widget-content ui-corner-all">
-                <!---<div id="cargando"><img src="img/loading.gif" width="35" height="35"></div>-->
             </fieldset>
         </form>
     </div>
     <div id="dialog-mensaje" title="Alerta"></div>
+    <div id="dialog-subcat" class="table-responsive">
+        <table id="tabla-capas-subcat" class="table-bordered">
+            <thead>
+            <tr>
+                <th class="column">Capas</th>
+            </tr>
+            </thead>
+            <tbody id="t_capas_subcat_body">
+            </tbody>
+        </table>
+    </div>
+    <div id="cargando"/>
+    <div id="dialog-ayuda" title="Ayuda">
+        <div class="sub-menu"><b>Control del Mapa</b></div>
+        <br>
+        - Manteniendo click izquierdo sobre el mapa y moviendo el mouse se puede desplazar a través del mismo.
+        <br>
+        <img src="img/zoom-in.png" class="iconos-ayuda">
+        - "Zoom-in" nos permite realizar acercamientos al mapa.
+        <br>
+        - Es posible realizar zoom-in sobre un área determinada. Manteniendo presionada la combinación "Alt + Click Izquierdo" y moviendo el mouse para delimitar el tamaño del área, se dibujara un rectángulo sobre el cual se realizara el acercamiento al mapa.
+        <br>
+        <img src="img/zoom-out.png" class="iconos-ayuda">
+        - "Zoom-out" nos permite realizar alejamientos con respecto al mapa.
+        <br>
+        - Otra opción para realizar zoom-in y zoom-out, es girando la rueda del mouse.
+        <br><br>
+        <div class="sub-menu"><b>Control de Capas</b></div>
+        <br>
+        <img src="img/buscar.png" class="iconos-ayuda">
+        - El botón "Buscar Capa" abre un panel para ingresar el nombre de la capa a buscar. Solo busca capas pertenecientes a la Dirección General de Estadística y Censos.
+        <br>
+        <img src="img/capas.png" class="iconos-ayuda">
+        - El botón "Capas" abre un panel que contiene las categorías y subcategorias de capas a visualizar, más el botón "Agregar Capa".
+        <br>
+        - La categoría "Capas Base" contiene las capas que se visualizaran en la base del mapa.
+        <br>
+        - La categoría "DGEyC" contiene las subcategorias de las capas pertenecientes a la Dirección General de Estadística y Censos.
+        <br>
+        Al hacer click en una subcategoria se abrirá un panel que contiene el listado de capas pertenecientes a la misma. Al hacer click sobre el nombre de la capa, la misma sera visualizada en el mapa.
+        <br>
+        <img src="img/agregar-capa.png" class="iconos-ayuda">
+        - "Agregar Capa" abre un panel en el cual se puede seleccionar un servidor perteneciente a otro organismo, una vez seleccionado el servidor se cargara una lista con las capas pertenecientes al mismo. Al hacer click sobre el nombre de la capa la misma sera visualizada en el mapa.
+        <br>
+        <img src="img/agregar-servidor.png" class="iconos-ayuda">
+        - "Agregar Servidor" abre un panel en el cual se debe ingresar el nombre del servidor y la url del mismo. Ejemplo, nombre: dgeyc, url: http://ide.estadistica.chubut.gov.ar/geoserver/wms. Una vez agregado el servidor se visualizara una lista con las capas disponibles pertenecientes al mismo. Al hacer click sobre el nombre de la capa la misma sera visualizada en el mapa.
+        <br><br>
+        <div class="sub-menu"><b>Interacción con las Capas</b></div>
+        <br>
+        - Al seleccionar una capa la misma es visualizada junto con la leyenda y una lista de las capas visibles en el mapa.
+        <br>
+        - En la lista de capas, por cada capa, tenemos el nombre de la capa más dos botones "Exportar Capa" y "Quitar Capa".
+        <br>
+        <img src="img/slider.png" class="iconos-ayuda">
+        - El botón "Transparencia Capa" abre un panel con un slider cuyo valores van de 0 a 100. El valor seleccionado afecta el nivel de transparencia de la capa, siendo 100 totalmente visible y 0 totalmente transparente.
+        <br>
+        <img src="img/descargar.png" class="iconos-ayuda">
+        - El botón "Exportar Capa" abre un panel con la lista de formatos disponibles para exportar la capa. Al hacer click sobre el nombre del formato comenzara la descarga.
+        <br>
+        <img src="img/cerrar.png" class="iconos-ayuda">
+        - El botón "Quitar Capa" además de eliminar la capa de la lista de capas visibles, elimina la capa del mapa. Es decir, la misma deja de ser visualizada.
+        <br>
+        - Manteniendo click izquierdo sobre el nombre de la capa en la lista de capas visibles, se puede mover hacia arriba o hacia abajo con el fin de cambiar el orden de las capas visibles. La capa que se visualizara junto con su leyenda en el tope del mapa sera la que se encuentre primera en la lista de capas visibles.
+        <br>
+        - Al hacer click izquierdo sobre la capa visualizada se puede obtener información de la misma.
+        <br>
+        - Al mantener presionada la tecla "Mayús" y hacer click en la capa se puede botenes información de más de un punto de interacción.
+        <br>
+        - Al mantener presionada la tecla "Ctrl", manteniendo click izquierdo y moviendo el mouse se dibujara un recuadro, para el cual se mostrara la información de todo punto de interacción de la capa contenido en el mismo.
+        <br><br>
+        <div class="sub-menu"><b>Interacción con la Información de la Capa</b></div>
+        <br>
+        <img src="img/descargar.png" class="iconos-ayuda">
+        - El botón "Exportar Información" inicia la descarga de una hoja de calculo (excel) con la información visualizada.
+        <br>
+        <img src="img/cerrar.png" class="iconos-ayuda">
+        - El botón "Cerrar" cierra el panel de la información.
+        <br>
+        - En el caso de tener más de una fila en la tabla de información, al hacer click sobre una de las cabeceras de las columnas, la información se ordenara de menor a mayor según los valores de dicha columna. Si volvemos a hacer click sobre la misma cabecera se ordenaran de mayor a menor.
+        <br><br>
+        <div class="sub-menu"><b>Imprimir Mapa</b></div>
+        <br>
+        <img src="img/impresora.png" class="iconos-ayuda">
+        - "Imprimir" abrirá la ventana de impresión ofrecida por el navegador.
+    </div>
+    <div id="dialog-transparencia" title="Transparencia">
+        <div id="contenedor-slider">
+            <div id="slider-transparencia">
+                <div id="custom-handle" class="ui-slider-handle"></div>
+            </div>
+        </div>
+    </div>
     <div id="cargando"/>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/capasDGEyC.js"></script>

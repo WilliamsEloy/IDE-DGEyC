@@ -18,6 +18,13 @@ app.BuscarControl = function(opt_options) {
 
     var handleBuscar = function() {
         $('#panel-buscar').toggle('slide', {}, 500);
+        if ($('#panel-capas').css('display') != 'none') {
+            $('#panel-capas').toggle('slide', {}, 500);
+        }
+        /*if ($('#panel-consulta').css('display') != 'none') {
+            $('#panel-consulta').toggle('slide', {direction: 'up'}, 500);
+        }*/
+        document.getElementById("input-buscar").focus();
     };
 
     button.addEventListener('click', handleBuscar, false);
@@ -45,7 +52,14 @@ app.ImprimirControl = function(opt_options) {
     var button = document.getElementById('imprimir');
 
     var handleImprimir = function() {
-        //TODO imprimir
+        window.print();
+        /*Utilizar CSS para bloquear las secciones de la página que no se deben imprimir
+        <style type="text/css" media="print">
+            @media print {
+                #parte1 {display:none;}
+                #parte2 {display:none;}
+            }
+        </style>*/
     };
 
     button.addEventListener('click', handleImprimir, false);
@@ -60,6 +74,34 @@ app.ImprimirControl = function(opt_options) {
 };
 
 ol.inherits(app.ImprimirControl, ol.control.Control);
+
+/**
+ * Lógica del boton ayuda.
+ * @param opt_options
+ * @constructor
+ */
+app.AyudaControl = function(opt_options) {
+
+    var options = opt_options || {};
+
+    var button = document.getElementById('ayuda');
+
+    var handleAyuda = function() {
+        ayuda();
+    };
+
+    button.addEventListener('click', handleAyuda, false);
+    button.addEventListener('touchstart', handleAyuda, false);
+
+    var element = document.getElementById('boton-ayuda');
+
+    ol.control.Control.call(this, {
+        element: element,
+        target: options.target
+    });
+};
+
+ol.inherits(app.AyudaControl, ol.control.Control);
 
 /**
  * Lógica del boton Capas
@@ -128,8 +170,8 @@ ol.inherits(app.PanelConsultaControl, ol.control.Control);*/
 var layers = [
     new ol.layer.Tile({
         source: new ol.source.TileWMS({
-            url: 'http://wms.ign.gob.ar/geoserver/wms?',
-            params: {layers: "capabaseargenmap", transparent: 'false', format: 'image/jpeg', tiled: 'true'},
+            url: 'http://ide.estadistica.chubut.gov.ar/mapas/geoserver/gwc/service/wms',
+            params: {layers: "division:continente", transparent: 'false', format: 'image/jpeg', tiled: 'true', 'SRS':'EPSG:900913'},
             serverType: 'geoserver'
         }),
         visible: true,
@@ -215,7 +257,8 @@ var map = new ol.Map({
         new app.ImprimirControl(),
         new app.CapasControl(),
         //new app.PanelConsultaControl(),
-        new app.BuscarControl()
+        new app.BuscarControl(),
+        new app.AyudaControl()
     ]),
     view: new ol.View({
         center: ol.proj.transform([-68, -43], 'EPSG:4326', 'EPSG:3857'),
@@ -262,11 +305,14 @@ $(document).ready(function() {
 });
 
 var featuresInteraction = new ol.Collection();
+
 // a normal select interaction to handle click
 var select = new ol.interaction.Select({
     features: featuresInteraction
 });
+
 map.addInteraction(select);
+
 select.on('select', function(e) {
     document.getElementById('tr_head').innerHTML = "";
     document.getElementById('t_body').innerHTML = "";
@@ -283,7 +329,9 @@ select.on('select', function(e) {
 var dragBox = new ol.interaction.DragBox({
     condition: ol.events.condition.platformModifierKeyOnly
 });
+
 map.addInteraction(dragBox);
+
 dragBox.on('boxend', function() {
     document.getElementById('tr_head').innerHTML = "";
     document.getElementById('t_body').innerHTML = "";

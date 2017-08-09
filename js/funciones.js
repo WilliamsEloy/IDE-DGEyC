@@ -12,7 +12,8 @@ $ (function () {
             seleccionarCapa(ui.item.value);
         },
         close: function (event, ui) {
-            if ($('#dialog-mensaje').dialog('isOpen') != true){
+            if (capa_seleccionada){
+                capa_seleccionada = false;
                 borrarBuscar();
             }
         }
@@ -177,8 +178,8 @@ $ (function () {
         var valido = true;
         allFields.removeClass("ui-state-error");
 
-        valido = valido && campoValido(nombre, 4, 16 );
-        valido = valido && campoValido(url, 10, 200 );
+        valido = valido && campoValido(nombre, 1, 20);
+        valido = valido && campoValido(url, 10, 200);
 
         if (valido) {
             var url_serv_carg = url[0].value;
@@ -213,6 +214,97 @@ $ (function () {
         $("#dialog-agregar-servidor").dialog( "open" );
         return false;
     });
+
+    $('button.dgeyc-subcat').on('click', function(){
+        capasSubcategoria($(this).attr('id'));
+        $("#dialog-subcat").dialog( "open" );
+        slidePanel('#panel-capas');
+        return false;
+    });
+
+    $("#dialog-subcat").dialog({
+        autoOpen: false,
+        resizable: false,
+        height: 420,
+        width: "auto",
+        show: {
+            effect: "fade",
+            duration: 500
+        },
+        hide: {
+            effect: "fade",
+            duration: 500
+        },
+    });
+
+    $(document).on('click', '#tabla-capas-subcat tr', function(){
+        var titulo = $(this).find('td:first').html();
+        if (titulo){
+            var map_layers = map.getLayers().getArray();
+            for (var i = 0; i < map_layers.length; ++i) {
+                if (map_layers[i].get('title') == titulo & map_layers[i].get('type') != 'feature') {
+                    seleccionarCapa(titulo);
+                    $("#dialog-subcat").dialog( "close" );
+                }
+            }
+        }
+    });
+
+    $("#dialog-ayuda").dialog({
+        autoOpen: false,
+        resizable: false,
+        height: 420,
+        width: 680,
+        show: {
+            effect: "fade",
+            duration: 500
+        },
+        hide: {
+            effect: "fade",
+            duration: 500
+        },
+    });
+
+    $( "#dialog-transparencia" ).dialog({
+        autoOpen: false,
+        resizable: false,
+        height: 100,
+        width: 380,
+        show: {
+            effect: "fade",
+            duration: 500
+        },
+        hide: {
+            effect: "fade",
+            duration: 500
+        }
+    });
+
+    capa_transparencia = '';
+    $(document).on('click', '.transparencia-capa', function(){
+        capa_transparencia = $(this).parent().text();
+        $( "#dialog-transparencia" ).dialog( "open" );
+        return false;
+    });
+
+    var handle = $( "#custom-handle" );
+    $( "#slider-transparencia" ).slider({
+        create: function() {
+            handle.text($(this).slider("value"));
+        },
+        range: "min",
+        min: 0,
+        max: 100,
+        value: 100,
+        slide: function( event, ui ) {
+            handle.text(ui.value);
+            map.getLayers().forEach(function (lyr) {
+                if (capa_transparencia == lyr.get('title')) {
+                    lyr.setOpacity(ui.value / 100);
+                }            
+            });
+        }
+    });
 });
 
 function seleccionarCapaBase() {
@@ -225,17 +317,20 @@ function seleccionarCapaBase() {
     $('#panel-capas-base').toggle('slide', {}, 500);
 }
 
+capa_seleccionada = false;
 function seleccionarCapa(capa) {
     var existe = false;
     var map_layers = map.getLayers().getArray();
     for (var i = 0; i < map_layers.length; ++i) {
         if (map_layers[i].get('type') != 'base'){
-            if (map_layers[i].get('title') === capa){
+            var capa_1 = map_layers[i].get('title').toLowerCase();
+            if (capa_1 === capa.toLowerCase()){
                 existe = true;
                 if (map_layers[i].get('visible') != true) {
                     map_layers[i].setVisible(true);
                     agregarCapaVisible(map_layers[i].get('title'));
                     capaAlFrente();
+                    capa_seleccionada = true;
                     if ($('#panel-capas-visibles').css('display') == 'none') {
                         $('#panel-capas-visibles').toggle('slide', {direction: 'up'}, 500);
                     }
@@ -306,10 +401,16 @@ function propiedadesCapa(nombre_capa, titulo, url) {
         $('#cargando').show();
         setTimeout(function () {
             $('#cargando').hide();
-        }, 5000);
+        }, 10000);
         var array = nombre_capa.split(':');
-        var capa = array[1];
-        var prefix = array[0];
+        var capa = '';
+        var prefix = '';
+        if (array.length > 1){
+            prefix = array[0];
+            capa = array[1];
+        } else {
+            capa = array[0];
+        }
         var vectorSource = new ol.source.Vector();
         var vector = new ol.layer.Vector({
             source: vectorSource,
@@ -329,34 +430,22 @@ function propiedadesCapa(nombre_capa, titulo, url) {
             srsName: 'EPSG:3857',
             featurePrefix: prefix,
             featureTypes: [capa],
-            outputFormat: 'application/json'
+            outputFormat: 'json'
         });
 
-        var requestWFS = url + '?request=getfeature&service=wfs&version=2.0.0&typename=' + nombre_capa + '&outputformat=application/json';
+        fetch(/*'/cgi-bin/proxy.cgi?url=' +*/ url, {
+            method: 'POST',
+            body: new XMLSerializer().serializeToString(featureRequest)
+        }).then(function(response) {
+            return response.json();
+        }).then(function(result) {
+            var features = new ol.format.GeoJSON().readFeatures(result);
+            vectorSource.addFeatures(features);
+            $('#cargando').hide();
+            map.getView().fit(vectorSource.getExtent());
+        });
 
-        var yql = 'http://query.yahooapis.com/v1/public/yql?q=' +
-            encodeURIComponent('select * from json where url="' + requestWFS + '"') + '&format=json&callback=?';
-
-        /*fetch(url, {
-         method: 'POST',
-         body: new XMLSerializer().serializeToString(featureRequest)
-         }).then(function(response) {
-         console.log(response);
-         return response.json();
-         }).then(function(json) {
-         var features = new ol.format.GeoJSON().readFeatures(json);
-         vectorSource.addFeatures(features);
-         $('#cargando').hide();
-         map.getView().fit(vectorSource.getExtent());
-         });*/
-
-        $.getJSON(yql, callbackFunc);
-
-        function callbackFunc(response) {
-            console.log(response);
-        }
-
-        //featuresInteraction.extend(vectorSource.getFeatures());
+        featuresInteraction.extend(vectorSource.getFeatures());
     }
 }
 
@@ -365,7 +454,7 @@ function propiedadesCapaFrente() {
     var map_layers = map.getLayers().getArray();
     for (var i = 0; i < map_layers.length; ++i) {
         if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature'){
-            if (map_layers[i].get('title') == capa){
+            if (map_layers[i].get('title') == capa & map_layers[map_layers.length - 1].get('title') != capa){
                 propiedadesCapa(map_layers[i].get('name'), map_layers[i].get('title'), map_layers[i].getSource().getUrls()[0]);
                 leyenda(map_layers[i].get('name'), map_layers[i].getSource().getUrls()[0]);
             }
@@ -417,19 +506,12 @@ function urlServExport(capaExportar) {
         if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature'){
             if (map_layers[i].get('title') == capaExportar) {
                 serv_export = map_layers[i].getSource().getUrls()[0];
+                if (serv_export == "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/gwc/service/wms") {
+                    serv_export = "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms";
+                }
             }
         }
     }
-}
-
-function panelBuscar() {
-    if ($('#panel-capas').css('display') != 'none') {
-        $('#panel-capas').toggle('slide', {}, 500);
-    }
-    /*if ($('#panel-consulta').css('display') != 'none') {
-        $('#panel-consulta').toggle('slide', {direction: 'up'}, 500);
-    }*/
-    document.getElementById("input-buscar").focus();
 }
 
 function ocultarPaneles() {
@@ -465,6 +547,17 @@ function agregarCapaVisible(titulo) {
     var capaId = capa.getAttribute('id');
     var txt = document.createTextNode(titulo);
     document.getElementById(capaId).appendChild(txt);
+    var btnTransparencia = document.createElement('a');
+    btnTransparencia.setAttribute('href', '#');
+    btnTransparencia.setAttribute('class', 'transparencia-capa');
+    btnTransparencia.setAttribute('id', 'transparencia-capa-' + nro_capa);
+    document.getElementById(capaId).appendChild(btnTransparencia);
+    var imgTransparencia = document.createElement('img');
+    imgTransparencia.setAttribute('src', 'img/slider.png');
+    imgTransparencia.setAttribute('class', 'transparencia');
+    imgTransparencia.setAttribute('title', 'Transparencia Capa');
+    imgTransparencia.setAttribute('data-toggle', 'tooltip');
+    document.getElementById('transparencia-capa-' + nro_capa).appendChild(imgTransparencia);
     var btnDescargar = document.createElement('a');
     btnDescargar.setAttribute('href', '#');
     btnDescargar.setAttribute('class', 'descargar-capa');
@@ -473,7 +566,7 @@ function agregarCapaVisible(titulo) {
     var imgDescargar = document.createElement('img');
     imgDescargar.setAttribute('src', 'img/descargar.png');
     imgDescargar.setAttribute('class', 'descargar');
-    imgDescargar.setAttribute('title', 'Exportar');
+    imgDescargar.setAttribute('title', 'Exportar Capa');
     imgDescargar.setAttribute('data-toggle', 'tooltip');
     document.getElementById('descargar-capa-' + nro_capa).appendChild(imgDescargar);
     var btnCerrar = document.createElement('a');
@@ -484,7 +577,7 @@ function agregarCapaVisible(titulo) {
     var imgCerrar = document.createElement('img');
     imgCerrar.setAttribute('src', 'img/cerrar.png');
     imgCerrar.setAttribute('class', 'cerrar');
-    imgCerrar.setAttribute('title', 'Quitar');
+    imgCerrar.setAttribute('title', 'Quitar Capa');
     imgCerrar.setAttribute('data-toggle', 'tooltip');
     document.getElementById('capa-visible-' + nro_capa).appendChild(imgCerrar);
 }
@@ -497,14 +590,11 @@ function cerrarPanelInfo() {
 }
 
 function WMSexport(link, requestWMS, capa, formato) {
+    //var url = '/cgi-bin/proxy.cgi?url=' + serv_export + encodeURIComponent('?request=GetCapabilities&service=WMS&version=1.3.0');
     var url = serv_export + '?request=GetCapabilities&service=WMS&version=1.3.0';
     var parser = new ol.format.WMSCapabilities();
-    var yql = 'http://query.yahooapis.com/v1/public/yql?q=' +
-        encodeURIComponent('select * from xml where url="' + url + '"') + '&format=xml&callback=?';
-    $.getJSON(yql, callbackFunc);
-
-    function callbackFunc(response) {
-        var result = parser.read(response.results[0]);
+    $.ajax(url).then(function (response) {
+        var result = parser.read(response);
         var Layers = result.Capability.Layer.Layer;
         var extent;
         var minx, miny, maxx, maxy;
@@ -524,12 +614,12 @@ function WMSexport(link, requestWMS, capa, formato) {
         link.setAttribute("href", encodedUri);
         link.setAttribute("target", "_blank");
         link.click();
-    };
+    });
 }
 
 function exportarCapa(formato) {
     var requestWMS = serv_export + '?service=wms&version=1.1.1&request=getmap&SRS=EPSG:4326&WIDTH=780&HEIGHT=330&layers=';
-    var requestWFS = serv_export + '?request=getfeature&service=wfs&version=2.0.0&typename=';
+    var requestWFS = serv_export + '?request=getfeature&service=wfs&version=2.0.0&typenames=';
     var map_layers = map.getLayers().getArray();
     for (var i = 0; i < map_layers.length; ++i) {
         if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature') {
@@ -540,7 +630,6 @@ function exportarCapa(formato) {
                 var wfs = false;
                 if (formato == 'exp-png'){
                     WMSexport(link, requestWMS, capa, '&format=image/png');
-                    encodedUrl = encodeURI(requestWFS);
                 }
                 else if (formato == 'exp-png8'){
                     WMSexport(link, requestWMS, capa, '&format=image/png8');
@@ -638,17 +727,6 @@ function exportarInfo() {
     tmpElemento.click();
 }
 
-function imprimir() {
-    window.print();
-    /*Utilizar CSS para bloquear las secciones de la página que no se deben imprimir
-    <style type="text/css" media="print">
-        @media print {
-            #parte1 {display:none;}
-            #parte2 {display:none;}
-        }
-    </style>*/
-}
-
 function cargarPropiedades(propiedades) {
     for (var prop in propiedades){
         if (prop != 'geometry'){
@@ -725,21 +803,20 @@ function cargarCapasServidor(serv) {
     setTimeout(function(){
         $('#cargando-capas').hide();
         if (error) {
-            document.getElementById('servidor').removeChild(document.getElementById('servidor').lastChild);
-            $('#servidor').selectmenu('refresh', true);
-            $('#servidor').val('sel_serv');
-            $('#servidor').selectmenu('refresh', true);
+            if (document.getElementById('servidor').length > 6) {
+                document.getElementById('servidor').removeChild(document.getElementById('servidor').lastChild);
+                $('#servidor').selectmenu('refresh', true);
+                $('#servidor').val('sel_serv');
+                $('#servidor').selectmenu('refresh', true);
+            }
         }
-    }, 5000);
+    }, 10000);
     url_serv = serv;
     var parser = new ol.format.WMSCapabilities();
+    //var url = '/cgi-bin/proxy.cgi?url=' + url_serv + encodeURIComponent('?request=GetCapabilities&service=WMS&version=1.3.0');
     var url = url_serv + '?request=GetCapabilities&service=WMS&version=1.3.0';
-    var yql = 'http://query.yahooapis.com/v1/public/yql?q=' +
-        encodeURIComponent('select * from xml where url="' + url + '"') + '&format=xml&callback=?';
-    $.getJSON(yql, callbackFunc);
-
-    function callbackFunc(response) {
-        var result = parser.read(response.results[0]);
+    $.ajax(url).then(function (response) {
+        var result = parser.read(response);
         var Layers = result.Capability.Layer.Layer;
         document.getElementById('t_capas_body').innerHTML = '';
         for (var i = 0, len = Layers.length; i < len; i++) {
@@ -758,5 +835,53 @@ function cargarCapasServidor(serv) {
         }
         $('#cargando-capas').hide();
         error = false;
-    };
+    });
+}
+
+function agregarCapaTablaSubcat(ind){
+    var capa = capas[ind];
+    var tr = document.createElement('tr');
+	tr.setAttribute('id', 'capa_subcat_' + ind);
+    document.getElementById('t_capas_subcat_body').appendChild(tr);
+    var td_capa = document.createElement('td');
+    td_capa.setAttribute('style', 'padding: 5px');
+    td_capa.textContent = capa.title;
+    document.getElementById('capa_subcat_' + ind).appendChild(td_capa);
+}
+
+function capasSubcategoria(subcat){
+    document.getElementById('t_capas_subcat_body').innerHTML = '';
+    if (subcat == 'capa-dgeyc-poblacion') {
+        $('#dialog-subcat').dialog('option', 'title', 'Población');
+        for (var i = 0; i < capas.length; i++) {
+            if (capas[i].subcat == 'poblacion') {
+                agregarCapaTablaSubcat(i);
+            }
+        }
+    } else if (subcat == 'capa-dgeyc-territorio') {
+        $('#dialog-subcat').dialog('option', 'title', 'Territorio');
+        for (var i = 0; i < capas.length; i++) {
+            if (capas[i].subcat == 'territorio') {
+                agregarCapaTablaSubcat(i);
+            }
+        }
+    } else if (subcat == 'capa-dgeyc-economia') {
+        $('#dialog-subcat').dialog('option', 'title', 'Economía');
+        for (var i = 0; i < capas.length; i++) {
+            if (capas[i].subcat == 'economia') {
+                agregarCapaTablaSubcat(i);
+            }
+        }
+    } else {
+        $('#dialog-subcat').dialog('option', 'title', 'Sociedad');
+        for (var i = 0; i < capas.length; i++) {
+            if (capas[i].subcat == 'sociedad') {
+                agregarCapaTablaSubcat(i);
+            }
+        }
+    }
+}
+
+function ayuda(){
+    $("#dialog-ayuda").dialog( "open" );
 }
