@@ -433,7 +433,11 @@ function propiedadesCapa(nombre_capa, titulo, url) {
             outputFormat: 'json'
         });
 
-        fetch(/*'/cgi-bin/proxy.cgi?url=' +*/ url, {
+        if (url != "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/gwc/service/wms"){
+		    url = '/cgi-bin/proxy.cgi?url=' + url;
+		}
+
+        fetch(url, {
             method: 'POST',
             body: new XMLSerializer().serializeToString(featureRequest)
         }).then(function(response) {
@@ -590,8 +594,12 @@ function cerrarPanelInfo() {
 }
 
 function WMSexport(link, requestWMS, capa, formato) {
-    //var url = '/cgi-bin/proxy.cgi?url=' + serv_export + encodeURIComponent('?request=GetCapabilities&service=WMS&version=1.3.0');
-    var url = serv_export + '?request=GetCapabilities&service=WMS&version=1.3.0';
+    var url = '';
+    if (serv_export != "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms"){
+        url = '/cgi-bin/proxy.cgi?url=' + serv_export + '?request=GetCapabilities&service=WMS&version=1.3.0';
+    } else {
+        url = serv_export + '?request=GetCapabilities&service=WMS&version=1.3.0';
+    }
     var parser = new ol.format.WMSCapabilities();
     $.ajax(url).then(function (response) {
         var result = parser.read(response);
@@ -813,8 +821,7 @@ function cargarCapasServidor(serv) {
     }, 10000);
     url_serv = serv;
     var parser = new ol.format.WMSCapabilities();
-    //var url = '/cgi-bin/proxy.cgi?url=' + url_serv + encodeURIComponent('?request=GetCapabilities&service=WMS&version=1.3.0');
-    var url = url_serv + '?request=GetCapabilities&service=WMS&version=1.3.0';
+    var url = '/cgi-bin/proxy.cgi?url=' + url_serv + encodeURIComponent('?request=GetCapabilities&service=WMS&version=1.3.0');
     $.ajax(url).then(function (response) {
         var result = parser.read(response);
         var Layers = result.Capability.Layer.Layer;
