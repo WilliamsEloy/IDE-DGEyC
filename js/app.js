@@ -52,14 +52,25 @@ app.ImprimirControl = function(opt_options) {
     var button = document.getElementById('imprimir');
 
     var handleImprimir = function() {
-        window.print();
-        /*Utilizar CSS para bloquear las secciones de la página que no se deben imprimir
-        <style type="text/css" media="print">
-            @media print {
-                #parte1 {display:none;}
-                #parte2 {display:none;}
-            }
-        </style>*/
+        var frame1 = document.createElement('iframe');
+        frame1.name = "frame1";
+        frame1.style.position = "absolute";
+        frame1.style.top = "-1000000px";
+        document.body.appendChild(frame1);
+        var frameDoc = frame1.contentWindow ? frame1.contentWindow : frame1.contentDocument.document ? frame1.contentDocument.document : frame1.contentDocument;
+        frameDoc.document.open();
+        frameDoc.document.write('<html><head></head><body>');
+        frameDoc.document.write('<h1 style="color: #2aabd2; text-align: center; font-weight: bold; font-variant: small-caps;">' + titulo_imprimir + '</h1>');
+        frameDoc.document.write('<br><img style="display: block; margin-left: auto; margin-right: auto;" src="' + url_imprimir + '"/>');
+        frameDoc.document.write('<br><br><br><h3 style="color: #2aabd2;">Leyenda</h3>');
+        frameDoc.document.write("<br><img src='" + url_leyenda + "'/>");
+        frameDoc.document.write('</body></html>');
+        frameDoc.document.close();
+        setTimeout(function () {
+            window.frames["frame1"].focus();
+            window.frames["frame1"].print();
+            document.body.removeChild(frame1);
+        }, 500);
     };
 
     button.addEventListener('click', handleImprimir, false);

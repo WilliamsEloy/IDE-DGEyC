@@ -380,6 +380,34 @@ function capaAlFrente(){
             map.getLayers().removeAt(i);
         }
     }
+    var url = "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms?request=GetCapabilities&service=WMS&version=1.3.0";
+    var parser = new ol.format.WMSCapabilities();
+    var name = map_layers[map_layers.length - 1].get('name');
+    titulo_imprimir = map_layers[map_layers.length - 1].get('title');
+    url_leyenda = 'http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER='
+        + name;
+
+    $.ajax(url).then(function (response) {
+        var result = parser.read(response);
+        var Layers = result.Capability.Layer.Layer;
+        var extent;
+        var minx, miny, maxx, maxy;
+        for (var i = 0, len = Layers.length; i < len; i++) {
+            var layerobj = Layers[i];
+            if (layerobj.Name == name)
+            {
+                extent = layerobj.EX_GeographicBoundingBox;
+                minx = extent[0];
+                miny = extent[1];
+                maxx = extent[2];
+                maxy = extent[3];
+            }
+        }
+        url_imprimir = "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms?" +
+            '?service=wms&version=1.1.1&request=getmap&SRS=EPSG:4326&WIDTH=780&HEIGHT=330&layers=' +
+            name + '&BBOX=' + minx + ',' + miny + ','
+            + maxx + ',' + maxy + '&format=image/png';
+    });
     leyenda(map_layers[map_layers.length - 1].get('name'), map_layers[map_layers.length - 1].getSource().getUrls()[0]);
     propiedadesCapa(map_layers[map_layers.length - 1].get('name'), map_layers[map_layers.length - 1].get('title'),
         map_layers[map_layers.length - 1].getSource().getUrls()[0]);
@@ -456,14 +484,45 @@ function propiedadesCapa(nombre_capa, titulo, url) {
 function propiedadesCapaFrente() {
     var capa = document.getElementById('sortable').firstChild.textContent;
     var map_layers = map.getLayers().getArray();
+    var name = '';
+
     for (var i = 0; i < map_layers.length; ++i) {
         if (map_layers[i].get('type') != 'base' & map_layers[i].get('type') != 'feature'){
             if (map_layers[i].get('title') == capa & map_layers[map_layers.length - 1].get('title') != capa){
                 propiedadesCapa(map_layers[i].get('name'), map_layers[i].get('title'), map_layers[i].getSource().getUrls()[0]);
                 leyenda(map_layers[i].get('name'), map_layers[i].getSource().getUrls()[0]);
+                name = map_layers[i].get('name');
             }
         }
     }
+
+    var url = "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms?request=GetCapabilities&service=WMS&version=1.3.0";
+    var parser = new ol.format.WMSCapabilities();
+    titulo_imprimir = map_layers[map_layers.length - 1].get('title');
+    url_leyenda = 'http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER='
+        + name;
+
+    $.ajax(url).then(function (response) {
+        var result = parser.read(response);
+        var Layers = result.Capability.Layer.Layer;
+        var extent;
+        var minx, miny, maxx, maxy;
+        for (var i = 0, len = Layers.length; i < len; i++) {
+            var layerobj = Layers[i];
+            if (layerobj.Name == name)
+            {
+                extent = layerobj.EX_GeographicBoundingBox;
+                minx = extent[0];
+                miny = extent[1];
+                maxx = extent[2];
+                maxy = extent[3];
+            }
+        }
+        url_imprimir = "http://ide.estadistica.chubut.gov.ar/mapas/geoserver/wms?" +
+            '?service=wms&version=1.1.1&request=getmap&SRS=EPSG:4326&WIDTH=780&HEIGHT=330&layers=' +
+            name + '&BBOX=' + minx + ',' + miny + ','
+            + maxx + ',' + maxy + '&format=image/png';
+    });
 }
 
 function leyenda(capa, url) {
@@ -601,6 +660,7 @@ function WMSexport(link, requestWMS, capa, formato) {
         url = serv_export + '?request=GetCapabilities&service=WMS&version=1.3.0';
     }
     var parser = new ol.format.WMSCapabilities();
+
     $.ajax(url).then(function (response) {
         var result = parser.read(response);
         var Layers = result.Capability.Layer.Layer;
